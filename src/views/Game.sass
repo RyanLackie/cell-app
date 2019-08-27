@@ -1,0 +1,54 @@
+.game
+    width: 100%
+    height: 100vh
+    overflow: hidden
+    
+.arena
+    width: 100%
+    height: 50vw
+    background-color: silver
+    overflow: hidden
+    outline: 1px red solid
+
+    .test
+        position: absolute
+        top: 100px
+        left: 100px
+        width: 100px
+        height: 100px
+        margin: 0px auto
+        background-color: blue
+
+$optionBarHeight: 15vh
+$optionBarMinHeight: 150px
+.option-bar
+    position: absolute
+    bottom: 0
+    width: 100%
+    height: $optionBarHeight
+    min-height: $optionBarMinHeight
+    overflow-x: scroll
+    overflow-y: hidden
+    white-space: nowrap
+    background-color: gray
+    outline: 1px black solid
+
+    .option
+        display: inline-block
+        width: calc($optionBarHeight, $optionBarMinHeight)
+        height: 100%
+        cursor: pointer
+        outline: 1px black solid
+
+.option-bar::-webkit-scrollbar-track
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3)
+    border-radius: 3px
+    background-color: #F5F5F5
+.option-bar::-webkit-scrollbar
+    height: 14px
+    background-color: #F5F5F5
+.option-bar::-webkit-scrollbar-thumb
+    border-radius: 3px
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3)
+    background-color: #555
+
