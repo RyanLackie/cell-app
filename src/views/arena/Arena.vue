@@ -8,19 +8,27 @@
         <!--svg :style="'width: 100%; height: 100%; outline: '+(50/bounds.height)*bounds.height+'px lightblue solid'"-->
         <svg style="width: 100%; height: 100%">
             
+            <!-- Walls -->
             <rect v-for="(wall, i) in walls" :key="'wall'+i"
             :x="(wall.x/bounds.width)*100+'%'" :y="(wall.y/bounds.height)*100+'%'"
             :width="(wall.width/bounds.width)*100+'%'" :height="(wall.height/bounds.height)*100+'%'"
             fill="lightblue"
             :id="'wall'+i"/>
+
+            <!-- Food -->
+            <ellipse v-for="(food, i) in food" :key="'food'+i"
+            :cx="(food.x/bounds.width)*100+'%'" :cy="(food.y/bounds.height)*100+'%'"
+            :rx="(food.radius/bounds.width)*100+'%'" :ry="(food.radius/bounds.height)*100+'%'"
+            fill="orange"
+            :id="'food'+i"/>
             
+            <!-- Circles -->
             <ellipse v-for="(circle, i) in circles" :key="'circle'+i"
             :cx="(circle.x/bounds.width)*100+'%'" :cy="(circle.y/bounds.height)*100+'%'"
             :rx="(circle.radius/bounds.width)*100+'%'" :ry="(circle.radius/bounds.height)*100+'%'"
             fill="green"
             :id="'circle'+i"/>
             <!--fill="url(#image)"-->
-
             <pattern id="image" x="0%" y="0%" height="100%" width="100%" viewBox="0 0 512 512">
                 <image x="0%" y="0%" width="512" height="512" xlink:href="./test.png"></image>
             </pattern>
@@ -50,6 +58,12 @@ function Wall(x, y, width, height) {
     this.width = width;
     this.height = height;
     //this.color = color;
+}
+
+function Food(x, y, radius) {
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
 }
 
 function Circle(x, y, radius, mass) {
@@ -192,8 +206,12 @@ export default {
                 new Wall(980, 0, 20, 500),          // Right
             ],
             
-            // Objects
-            circles: []
+            // Circle objects
+            circles: [],
+
+            // Food objects
+            food: [],
+            lastFoodSpawn: 0
         }
     },
 
@@ -239,7 +257,7 @@ export default {
 
         // Game
         init() {
-            for (var i = 0; i < 1; i++) {
+            for (var i = 0; i < 6; i++) {
                 const r = 50;
                 var x = this.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
                 var y = this.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.height - this.bounds.wallThickness - r);
@@ -248,8 +266,8 @@ export default {
                 if (i != 0) {
                     for (var j = 0; j < this.circles.length; j++) {
                         if (this.distance(x, y, this.circles[j].x, this.circles[j].y) - (r + this.circles[j].radius) < 0) {
-                            var x = this.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
-                            var y = this.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.height - this.bounds.wallThickness - r);
+                            x = this.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
+                            y = this.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.height - this.bounds.wallThickness - r);
                             
                             j = -1;
                         }
@@ -272,6 +290,29 @@ export default {
             
             for (var i = 0; i < this.circles.length; i++) {
                 this.circles[i].update(this.circles, this.walls, this.bounds);
+            }
+
+            this.spawnFood();
+        },
+
+        spawnFood() {
+            if (Date.now() > this.lastFoodSpawn + 5000) {
+                this.lastFoodSpawn = Date.now();
+
+                const r = 5;
+                var x = this.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
+                var y = this.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.height - this.bounds.wallThickness - r);
+
+                for (var i = 0; i < this.circles.length; i++) {
+                    if (this.distance(x, y, this.circles[i].x, this.circles[i].y) - (r + this.circles[i].radius) < 0) {
+                        x = this.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
+                        y = this.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.height - this.bounds.wallThickness - r);
+                        
+                        i = -1;
+                    }
+                }
+
+                this.food.push( new Food(x, y, r) );
             }
         },
 
