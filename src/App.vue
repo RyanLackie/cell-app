@@ -21,6 +21,7 @@
     }
 </style>
 
+<script type="text/javascript" src="d3.v2.min.js"></script>
 
 <script>
 

@@ -1,10 +1,34 @@
 <template>
 
-    <div class="arena" :style="'transform: scale('+scale+') translate('+translateX+'px,'+translateY+'px)'"
+    <div class="arena" :style="'transform: scale('+scale+') translate('+translateX+'px,'+translateY+'px);'+
+    'width: '+getAspectRatio()*bounds.width+'px; height: '+getAspectRatio()*bounds.height+'px;'"
     @mousedown="mouseDown($event)" @mousemove="mouseMove($event)" @mouseup="mouseUp()" @mouseleave="mouseLeave()"
     @mousewheel="scrollArena($event)">
 
-        <div class="test"></div>
+        <svg style="width: 100%; height: 100%">
+            
+            <rect v-for="(wall, i) in walls" :key="'wall'+i"
+            :x="(wall.x/bounds.width)*100+'%'" :y="(wall.y/bounds.height)*100+'%'"
+            :width="(wall.width/bounds.width)*100+'%'" :height="(wall.height/bounds.height)*100+'%'"
+            fill="lightblue"
+            :id="'wall'+i"/>
+            
+            <ellipse v-for="(circle, i) in circles" :key="'circle'+i"
+            :cx="(circle.x/bounds.width)*100+'%'" :cy="(circle.y/bounds.height)*100+'%'"
+            :rx="(circle.radius/bounds.width)*100+'%'" :ry="(circle.radius/bounds.height)*100+'%'"
+            fill="url(#image)"
+            :id="'circle'+i"/>
+
+            <pattern id="image" x="0%" y="0%" height="100%" width="100%" viewBox="0 0 512 512">
+                <image x="0%" y="0%" width="512" height="512" xlink:href="./test.png"></image>
+            </pattern>
+
+        </svg>
+
+        <!--canvas id="canvas"
+        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+        outline: 5px blue solid">
+        </canvas-->
 
     </div>
 
@@ -17,9 +41,128 @@
 
 
 <script>
+
+function Wall(x, y, width, height) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    //this.color = color;
+}
+
+function Circle(x, y, radius, mass) {
+    this.x = x;
+    this.y = y;
+    this.velocity = {
+        x: Math.random() - 0.5,
+        y: Math.random() - 0.5
+    };
+    this.radius = radius;
+    this.mass = mass;
+    //this.color = color;
+
+    this.update = (circles, walls, bounds) => {
+        
+        // Circles
+        for (var i = 0; i < circles.length; i++) {
+            if (this == circles[i]) continue;
+            
+            if (distance(this.x, this.y, circles[i].x, circles[i].y) - (this.radius + circles[i].radius) < 0)
+                resolveCollision(this, circles[i]);
+        }
+
+        // Walls
+        /*
+        for (i = 0; i < walls.length; i++) {
+            var deltaX = this.x - Math.max(walls[i].x, Math.min(this.x, walls[i].x + walls[i].width));
+            var deltaY = this.y - Math.max(walls[i].y, Math.min(this.y, walls[i].y + walls[i].height));
+            if ( (deltaX * deltaX + deltaY * deltaY) < (this.radius * this.radius) )
+                console.log('here');
+        }
+        */
+        if ((this.x - this.radius <= 0) || (this.x + this.radius >= bounds.width))
+            this.velocity.x = -this.velocity.x;
+        if ((this.y - this.radius <= 0) || (this.y + this.radius >= bounds.height))
+            this.velocity.y = -this.velocity.y;
+
+        // Move
+        this.x += this.velocity.x;
+        this.y += this.velocity.y;
+
+        // Draw
+        /*
+        c.beginPath();
+        c.arc((this.x/bounds.width)*100,
+                (this.y/bounds.height)*100,
+                (this.radius/bounds.width)*100,
+                0, Math.PI * 2, false);
+        console.log((this.x/bounds.width)*100);
+        c.fillStyle = 'red';
+        c.fill();
+        c.closePath();
+        */
+    };
+}
+
+function distance(x1, y1, x2, y2) {
+    return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow((y1 - y2), 2));
+}
+function resolveCollision(particle, otherParticle) {
+    const xVelocityDiff = particle.velocity.x - otherParticle.velocity.x;
+    const yVelocityDiff = particle.velocity.y - otherParticle.velocity.y;
+
+    const xDist = otherParticle.x - particle.x;
+    const yDist = otherParticle.y - particle.y;
+
+    // Prevent accidental overlap of particles
+    if (xVelocityDiff * xDist + yVelocityDiff * yDist >= 0) {
+
+        // Grab angle between the two colliding particles
+        const angle = -Math.atan2(otherParticle.y - particle.y, otherParticle.x - particle.x);
+
+        // Store mass in var for better readability in collision equation
+        const m1 = particle.mass;
+        const m2 = otherParticle.mass;
+
+        // Velocity before equation
+        const u1 = rotate(particle.velocity, angle);
+        const u2 = rotate(otherParticle.velocity, angle);
+
+        // Velocity after 1d collision equation
+        const v1 = { 
+            x: u1.x * (m1 - m2) / (m1 + m2) + u2.x * 2 * m2 / (m1 + m2),
+            y: u1.y
+        };
+        const v2 = {
+            x: u2.x * (m1 - m2) / (m1 + m2) + u1.x * 2 * m2 / (m1 + m2),
+            y: u2.y
+        };
+
+        // Final velocity after rotating axis back to original location
+        const vFinal1 = rotate(v1, -angle);
+        const vFinal2 = rotate(v2, -angle);
+
+        // Swap particle velocities for realistic bounce effect
+        particle.velocity.x = vFinal1.x;
+        particle.velocity.y = vFinal1.y;
+
+        otherParticle.velocity.x = vFinal2.x;
+        otherParticle.velocity.y = vFinal2.y;
+    }
+}
+function rotate(velocity, angle) {
+    // Rotated velocities
+    return {
+        x: velocity.x * Math.cos(angle) - velocity.y * Math.sin(angle),
+        y: velocity.x * Math.sin(angle) + velocity.y * Math.cos(angle)
+    };
+}
+
+
 export default {
     data() {
         return {
+            // Screen Movement
             scale: 1,
             zoomStep: 0.25,
 
@@ -28,11 +171,42 @@ export default {
 
             mouseDownBoolean: false,
             previousX: 0,
-            previousY: 0
+            previousY: 0,
+
+
+            // Game loop
+            lastUpdate: Date.now(),
+            tickInterval: null,
+
+
+            // Enviroment
+            bounds: {
+                width: 1000, height: 500, wallThickness: 50
+            },
+            /*
+                Objects are referenced by their top left
+            */
+            // Wall Objects
+            walls: [
+                new Wall(0, 0, 1000, 20),           // Top
+                new Wall(0, 0, 20, 500),            // Left
+                new Wall(0, 480, 1000, 20),         // Bottom
+                new Wall(980, 0, 20, 500),          // Right
+            ],
+            
+            // Objects
+            circles: []
+            //{ x: 20, y: 20, r: 3, xr: 0, yr: -1, moveSpeed: 0.005 }
         }
     },
 
     methods: {
+        // Size rendering to the size of the screen
+        getAspectRatio() {
+            return window.screen.width / this.bounds.width;
+        },
+
+        // Camera control
         scrollArena(event) {
             var direction = 0;
             if (event.deltaY > 0)
@@ -40,7 +214,7 @@ export default {
             else
                 direction = -1
 
-            this.scale - direction * this.zoomStep >= 1 &&
+            this.scale - direction * this.zoomStep >= 0.75 &&
             this.scale - direction * this.zoomStep <= 8 ? 
             (this.scale -= direction * this.zoomStep) : null;
         },
@@ -65,6 +239,94 @@ export default {
         mouseLeave() {
             this.mouseDownBoolean = false;
         },
+
+        // Game
+        init() {
+            for (var i = 0; i < 1; i++) {
+                const r = 50;
+                var x = this.randomIntFromRange(r, this.bounds.width - r);
+                var y = this.randomIntFromRange(r, this.bounds.height - r);
+                var mass = 1;
+
+                if (i != 0) {
+                    for (var j = 0; j < this.circles.length; j++) {
+                        //console.log(this.circles[j].x + '  ' + this.circles[j].y);
+                        if (this.distance(x, y, this.circles[j].x, this.circles[j].y) - (r + this.circles[j].radius) < 0) {
+                            x = this.randomIntFromRange(r, this.bounds.width - r);
+                            y = this.randomIntFromRange(r, this.bounds.height - r);
+                            
+                            j = -1;
+                        }
+                    }
+                }
+                
+                this.circles.push( new Circle(x, y, r, mass) );
+            }
+
+            this.tickInterval = setInterval(this.tick, 0);
+        },
+
+        distance(x1, y1, x2, y2) {
+            return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow((y1 - y2), 2));
+        },
+        randomIntFromRange(min, max) {
+            return Math.floor(Math.random() * (max - min + 1) + min);
+        },
+
+        tick() {
+            var now = Date.now();
+            var dt = now - this.lastUpdate;
+            this.lastUpdate = now;
+            
+            /*
+            const canvas = document.getElementById('canvas');
+            const c = canvas.getContext('2d');
+            c.clearRect(0, 0, canvas.width, canvas.height);
+            */
+            
+            for (var i = 0; i < this.circles.length; i++) {
+                this.circles[i].update(this.circles, this.walls, this.bounds);
+            }
+        },
+
+
+        update(dt) {
+            for (var i = 0; i < this.circles.length; i++) {
+                this.circles[i].x += this.circles[i].xr * this.circles[i].moveSpeed * dt;
+                this.circles[i].y += this.circles[i].yr * this.circles[i].moveSpeed * dt;
+
+                this.findWallCollisions(this.circles[i]);
+            }
+        },
+        findWallCollisions(circle) {
+            for (var i = 0; i < this.walls.length; i++) {
+                var rect = this.walls[0];
+
+                if (this.collisionBetweenCircleAndRect(circle, rect))
+                    debugger;
+            }
+        },
+        collisionBetweenCircleAndRect(circle, rect) {
+            var deltaX = circle.x - Math.max(rect.x, Math.min(circle.x, rect.x + rect.width));
+            var deltaY = circle.y - Math.max(rect.y, Math.min(circle.y, rect.y + rect.height));
+
+            //console.log((deltaX * deltaX + deltaY * deltaY) +"   "+ (circle.radius * circle.radius));
+            return (deltaX * deltaX + deltaY * deltaY) < (circle.radius * circle.radius);
+        },
+
+        distanceBetweenSides(x1, y1, r1, x2, y2, r2) {
+            return this.distance(x1, y1, x2, y2) - (r1 + r2);
+        },
+        
+
+
+    },
+
+    mounted() {
+        this.init();
+    },
+    beforeDestroy() {
+        this.tickInterval = null;
     }
 }
 </script>
