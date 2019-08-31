@@ -77,10 +77,18 @@ function Circle(x, y, radius, mass) {
     this.mass = mass;
     //this.color = color;
 
-    this.update = (circles, walls, bounds) => {
+    this.update = (food, circles, walls) => {
+        // Food
+        for (var i = 0; i < food.length; i++) {
+            // food[i].radius / 2 because a circle only has to cover half of something to eat it
+            if (distance(this.x, this.y, food[i].x, food[i].y) - (this.radius + food[i].radius/2) < 0) {
+                food.splice(i, 1);
+                this.radius++;
+            }
+        }
         
         // Circles
-        for (var i = 0; i < circles.length; i++) {
+        for (i = 0; i < circles.length; i++) {
             if (this == circles[i]) continue;
             
             if (distance(this.x, this.y, circles[i].x, circles[i].y) - (this.radius + circles[i].radius) < 0)
@@ -96,10 +104,12 @@ function Circle(x, y, radius, mass) {
         }
         
         // End of world
+        /*
         if ((this.x - this.radius <= 0) || (this.x + this.radius >= bounds.width))
             this.velocity.x = -this.velocity.x;
         if ((this.y - this.radius <= 0) || (this.y + this.radius >= bounds.height))
             this.velocity.y = -this.velocity.y;
+        */
         
         // Move
         this.x += this.velocity.x;
@@ -200,10 +210,10 @@ export default {
             */
             // Wall Objects
             walls: [
-                new Wall(0, 0, 1000, 20),           // Top
-                new Wall(0, 0, 20, 500),            // Left
-                new Wall(0, 480, 1000, 20),         // Bottom
-                new Wall(980, 0, 20, 500),          // Right
+                new Wall(0, 0, 1000, 20),       // Top
+                new Wall(0, 0, 20, 500),        // Left
+                new Wall(0, 480, 1000, 20),     // Bottom
+                new Wall(980, 0, 20, 500),      // Right
             ],
             
             // Circle objects
@@ -257,8 +267,8 @@ export default {
 
         // Game
         init() {
-            for (var i = 0; i < 6; i++) {
-                const r = 50;
+            for (var i = 0; i < 15; i++) {
+                const r = 20;
                 var x = this.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
                 var y = this.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.height - this.bounds.wallThickness - r);
                 var mass = 1;
@@ -289,7 +299,7 @@ export default {
             this.lastUpdate = now;
             
             for (var i = 0; i < this.circles.length; i++) {
-                this.circles[i].update(this.circles, this.walls, this.bounds);
+                this.circles[i].update(this.food, this.circles, this.walls);
             }
 
             this.spawnFood();
