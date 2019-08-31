@@ -5,6 +5,7 @@
     @mousedown="mouseDown($event)" @mousemove="mouseMove($event)" @mouseup="mouseUp()" @mouseleave="mouseLeave()"
     @mousewheel="scrollArena($event)">
 
+        <!--svg :style="'width: 100%; height: 100%; outline: '+(50/bounds.height)*bounds.height+'px lightblue solid'"-->
         <svg style="width: 100%; height: 100%">
             
             <rect v-for="(wall, i) in walls" :key="'wall'+i"
@@ -16,8 +17,9 @@
             <ellipse v-for="(circle, i) in circles" :key="'circle'+i"
             :cx="(circle.x/bounds.width)*100+'%'" :cy="(circle.y/bounds.height)*100+'%'"
             :rx="(circle.radius/bounds.width)*100+'%'" :ry="(circle.radius/bounds.height)*100+'%'"
-            fill="url(#image)"
+            fill="green"
             :id="'circle'+i"/>
+            <!--fill="url(#image)"-->
 
             <pattern id="image" x="0%" y="0%" height="100%" width="100%" viewBox="0 0 512 512">
                 <image x="0%" y="0%" width="512" height="512" xlink:href="./test.png"></image>
@@ -72,35 +74,22 @@ function Circle(x, y, radius, mass) {
         }
 
         // Walls
-        /*
         for (i = 0; i < walls.length; i++) {
             var deltaX = this.x - Math.max(walls[i].x, Math.min(this.x, walls[i].x + walls[i].width));
             var deltaY = this.y - Math.max(walls[i].y, Math.min(this.y, walls[i].y + walls[i].height));
-            if ( (deltaX * deltaX + deltaY * deltaY) < (this.radius * this.radius) )
-                console.log('here');
+            if ((deltaX * deltaX + deltaY * deltaY) < (this.radius * this.radius))
+                resolveWallCollision(this, deltaX, deltaY);
         }
-        */
+        
+        // End of world
         if ((this.x - this.radius <= 0) || (this.x + this.radius >= bounds.width))
             this.velocity.x = -this.velocity.x;
         if ((this.y - this.radius <= 0) || (this.y + this.radius >= bounds.height))
             this.velocity.y = -this.velocity.y;
-
+        
         // Move
         this.x += this.velocity.x;
         this.y += this.velocity.y;
-
-        // Draw
-        /*
-        c.beginPath();
-        c.arc((this.x/bounds.width)*100,
-                (this.y/bounds.height)*100,
-                (this.radius/bounds.width)*100,
-                0, Math.PI * 2, false);
-        console.log((this.x/bounds.width)*100);
-        c.fillStyle = 'red';
-        c.fill();
-        c.closePath();
-        */
     };
 }
 
@@ -158,6 +147,15 @@ function rotate(velocity, angle) {
     };
 }
 
+function resolveWallCollision(circle, deltaX, deltaY) {
+    deltaX = Math.abs(deltaX);
+    deltaY = Math.abs(deltaY);
+    if (deltaX > deltaY)
+        circle.velocity.x = -circle.velocity.x;
+    else if (deltaY > deltaX)
+        circle.velocity.y = -circle.velocity.y;
+}
+
 
 export default {
     data() {
@@ -181,7 +179,7 @@ export default {
 
             // Enviroment
             bounds: {
-                width: 1000, height: 500, wallThickness: 50
+                width: 1000, height: 500, wallThickness: 20
             },
             /*
                 Objects are referenced by their top left
@@ -196,7 +194,6 @@ export default {
             
             // Objects
             circles: []
-            //{ x: 20, y: 20, r: 3, xr: 0, yr: -1, moveSpeed: 0.005 }
         }
     },
 
@@ -244,16 +241,15 @@ export default {
         init() {
             for (var i = 0; i < 1; i++) {
                 const r = 50;
-                var x = this.randomIntFromRange(r, this.bounds.width - r);
-                var y = this.randomIntFromRange(r, this.bounds.height - r);
+                var x = this.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
+                var y = this.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.height - this.bounds.wallThickness - r);
                 var mass = 1;
 
                 if (i != 0) {
                     for (var j = 0; j < this.circles.length; j++) {
-                        //console.log(this.circles[j].x + '  ' + this.circles[j].y);
                         if (this.distance(x, y, this.circles[j].x, this.circles[j].y) - (r + this.circles[j].radius) < 0) {
-                            x = this.randomIntFromRange(r, this.bounds.width - r);
-                            y = this.randomIntFromRange(r, this.bounds.height - r);
+                            var x = this.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
+                            var y = this.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.height - this.bounds.wallThickness - r);
                             
                             j = -1;
                         }
@@ -265,10 +261,6 @@ export default {
 
             this.tickInterval = setInterval(this.tick, 0);
         },
-
-        distance(x1, y1, x2, y2) {
-            return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow((y1 - y2), 2));
-        },
         randomIntFromRange(min, max) {
             return Math.floor(Math.random() * (max - min + 1) + min);
         },
@@ -278,46 +270,14 @@ export default {
             var dt = now - this.lastUpdate;
             this.lastUpdate = now;
             
-            /*
-            const canvas = document.getElementById('canvas');
-            const c = canvas.getContext('2d');
-            c.clearRect(0, 0, canvas.width, canvas.height);
-            */
-            
             for (var i = 0; i < this.circles.length; i++) {
                 this.circles[i].update(this.circles, this.walls, this.bounds);
             }
         },
 
-
-        update(dt) {
-            for (var i = 0; i < this.circles.length; i++) {
-                this.circles[i].x += this.circles[i].xr * this.circles[i].moveSpeed * dt;
-                this.circles[i].y += this.circles[i].yr * this.circles[i].moveSpeed * dt;
-
-                this.findWallCollisions(this.circles[i]);
-            }
+        distance(x1, y1, x2, y2) {
+            return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow((y1 - y2), 2));
         },
-        findWallCollisions(circle) {
-            for (var i = 0; i < this.walls.length; i++) {
-                var rect = this.walls[0];
-
-                if (this.collisionBetweenCircleAndRect(circle, rect))
-                    debugger;
-            }
-        },
-        collisionBetweenCircleAndRect(circle, rect) {
-            var deltaX = circle.x - Math.max(rect.x, Math.min(circle.x, rect.x + rect.width));
-            var deltaY = circle.y - Math.max(rect.y, Math.min(circle.y, rect.y + rect.height));
-
-            //console.log((deltaX * deltaX + deltaY * deltaY) +"   "+ (circle.radius * circle.radius));
-            return (deltaX * deltaX + deltaY * deltaY) < (circle.radius * circle.radius);
-        },
-
-        distanceBetweenSides(x1, y1, r1, x2, y2, r2) {
-            return this.distance(x1, y1, x2, y2) - (r1 + r2);
-        },
-        
 
 
     },
