@@ -1,18 +1,20 @@
-const api_root = "http://localhost:";
+const api_root = "http://localhost:81";
 //const api_root = "http://134.209.217.37:";
-const jsPort = 81;
-const pyPort = 82;
 
 // Methods
-export function ping_js() {
-    console.log(myFetch(api_root+jsPort + "/app/ping", {}));
+export function ping() {
+    return myFetch(api_root + "/app/ping", {});
 }
 
-
-export function ping_py() {
-    console.log(myFetch(api_root+pyPort + "/ping", {}));
+export function getState(ID) {
+    return myFetch(api_root + "/app/getState", {
+        ID
+    });
 }
 
+export function createNewGame() {
+    return myFetch(api_root + "/app/createNewGame", {});
+}
 
 
 function myFetch(url = ``, data = null) {

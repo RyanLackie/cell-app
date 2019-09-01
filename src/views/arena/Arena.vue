@@ -52,12 +52,13 @@
 
 <script>
 
+import * as api from '@/services/api_access';
+
 function Wall(x, y, width, height) {
     this.x = x;
     this.y = y;
     this.width = width;
     this.height = height;
-    //this.color = color;
 }
 
 function Food(x, y, radius) {
@@ -75,7 +76,6 @@ function Circle(x, y, radius, mass) {
     };
     this.radius = radius;
     this.mass = mass;
-    //this.color = color;
 
     this.update = (food, circles, walls) => {
         // Food
@@ -197,8 +197,8 @@ export default {
 
 
             // Game loop
-            lastUpdate: Date.now(),
             tickInterval: null,
+            lastUpdate: Date.now(),
 
 
             // Enviroment
@@ -210,10 +210,12 @@ export default {
             */
             // Wall Objects
             walls: [
+                /*
                 new Wall(0, 0, 1000, 20),       // Top
                 new Wall(0, 0, 20, 500),        // Left
                 new Wall(0, 480, 1000, 20),     // Bottom
                 new Wall(980, 0, 20, 500),      // Right
+                */
             ],
             
             // Circle objects
@@ -221,7 +223,12 @@ export default {
 
             // Food objects
             food: [],
-            lastFoodSpawn: 0
+            lastFoodSpawn: 0,
+
+
+
+            gameState: null,
+
         }
     },
 
@@ -294,6 +301,8 @@ export default {
         },
 
         tick() {
+            
+            
             var now = Date.now();
             var dt = now - this.lastUpdate;
             this.lastUpdate = now;
@@ -334,7 +343,27 @@ export default {
     },
 
     mounted() {
-        this.init();
+        //this.init();
+        
+        api.createNewGame().then(
+            responce => {
+                this.gameState = responce.gameState;
+
+                var THIS = this;
+                this.tickInterval = setInterval(function() {
+                    api.getState(responce.ID).then(
+                        update => {
+                            THIS.gameState = update.gameState;
+                            //console.log(THIS.gameState);
+                            THIS.walls = THIS.gameState.walls;
+                            THIS.circles = THIS.gameState.circles;
+                            THIS.food = THIS.gameState.food;
+                            console.log(THIS.gameState);
+                        }
+                    );
+                }, 0);
+            }
+        );
     },
     beforeDestroy() {
         this.tickInterval = null;

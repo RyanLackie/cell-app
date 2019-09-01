@@ -12,5 +12,18 @@ app.post('/ping', (req, res) => {
     );
 });
 
+app.post('/getState', (req, res) => {
+    model.getState(
+        req.body.ID,
+        response => res.send(response)
+    );
+});
+
+app.post('/createNewGame', (req, res) => {
+    model.createNewGame(
+        response => res.send(response)
+    );
+});
+
 
 module.exports = app;
