@@ -17,7 +17,7 @@ class Circle {
         this.mass = mass;
     }
 
-    update(dt, walls, circles, food) {
+    update(dt, walls, circles, food, bounds) {
         var target = null;
         var targetDistance = null;
 
@@ -55,12 +55,23 @@ class Circle {
         }
 
         // Walls
+        /*
         for (i = 0; i < walls.length; i++) {
             var deltaX = this.x - Math.max(walls[i].x, Math.min(this.x, walls[i].x + walls[i].width));
             var deltaY = this.y - Math.max(walls[i].y, Math.min(this.y, walls[i].y + walls[i].height));
             if ((deltaX * deltaX + deltaY * deltaY) < (this.radius * this.radius))
                 Util.resolveWallCollision(this, deltaX, deltaY);
         }
+        */
+        if (this.x - this.radius <= bounds.wallThickness)
+            this.velocity.x = Math.abs(this.velocity.x);
+        else if (this.x + this.radius >= bounds.width - bounds.wallThickness)
+            this.velocity.x = -Math.abs(this.velocity.x);
+            
+        if (this.y - this.radius <= bounds.wallThickness)
+            this.velocity.y = Math.abs(this.velocity.y);
+        else if (this.y + this.radius >= bounds.height - bounds.wallThickness)
+            this.velocity.y = -Math.abs(this.velocity.y);
         
         // End of world
         /*

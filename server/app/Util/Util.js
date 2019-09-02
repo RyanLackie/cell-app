@@ -1,5 +1,9 @@
 module.exports = {
 
+    randomIntFromRange(min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    },
+
     distance(x1, y1, x2, y2) {
         return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow((y1 - y2), 2));
     },
@@ -63,9 +67,5 @@ module.exports = {
         else if (deltaY > deltaX)
             circle.velocity.y = -circle.velocity.y;
     },
-
-    randomIntFromRange(min, max) {
-        return Math.floor(Math.random() * (max - min + 1) + min);
-    }
 
 }
