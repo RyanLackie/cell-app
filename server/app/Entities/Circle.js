@@ -5,28 +5,49 @@ class Circle {
     constructor(x, y, radius, mass) {
         this.x = x;
         this.y = y;
+
         var velX = Math.random() - 0.5;
         var velY = Math.random() - Math.abs(velX);
         this.velocity = {
             x: velX,
-            y: velY
+            y: velY    // Not quite it
         };
+
         this.radius = radius;
         this.mass = mass;
     }
 
     update(dt, walls, circles, food) {
+        var target = null;
+        var targetDistance = null;
+
         // Food
+        
         for (var i = 0; i < food.length; i++) {
+            var distance = Util.distance(this.x, this.y, food[i].x, food[i].y);
+
             // food[i].radius / 2 because a circle only has to cover half of something to eat it
-            if (Util.distance(this.x, this.y, food[i].x, food[i].y) - (this.radius + food[i].radius/2) < 0) {
+            if (distance - (this.radius + food[i].radius/2) < 0) {
                 food.splice(i, 1);
                 this.radius++;
             }
+
+            else if (distance < targetDistance || target == null) {
+                target = food[i];
+                targetDistance = distance;
+            }
         }
         
-        // Circles
-        for (i = 0; i < circles.length; i++) {
+        // Manipulate xy velocity to target xy
+        if (target != null) {
+            var diffX = target.x - this.x;
+            var diffY = target.y - this.y;
+            this.velocity.x = diffX / (Math.abs(diffX) + Math.abs(diffY));
+            this.velocity.y = diffY / (Math.abs(diffX) + Math.abs(diffY));
+        }
+        
+        // Circles  // Add enemy targeting later
+        for (var i = 0; i < circles.length; i++) {
             if (this == circles[i]) continue;
             
             if (Util.distance(this.x, this.y, circles[i].x, circles[i].y) - (this.radius + circles[i].radius) < 0)
@@ -50,7 +71,6 @@ class Circle {
         */
         
         // Move
-        //console.log(dt);
         this.x += this.velocity.x;
         this.y += this.velocity.y;
     };
