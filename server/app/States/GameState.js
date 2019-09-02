@@ -55,7 +55,7 @@ class GameState {
         lastUpdate = now;
         
         for (var i = 0; i < this.circles.length; i++) {
-            this.circles[i].update(this.food, this.circles, this.walls);
+            this.circles[i].update(dt, this.walls, this.circles, this.food );
         }
 
         this.spawnFood();

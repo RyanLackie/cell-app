@@ -12,13 +12,23 @@ class Model {
     }
 
     getState(ID, call_back) {
-        var responce = gameStates[ID];
-        call_back(
-            {
-                'ID': responce.ID,
-                'gameState': responce.gameState
-            }
-        );
+        console.log(gameStates[ID]);
+        if (gameStates[ID] != undefined) {
+            var THIS = this;
+
+            clearInterval(gameStates[ID].lastUpdate);
+            gameStates[ID].lastUpdate = setTimeout(function() {
+                THIS.removeGameState(ID);
+            }, 5000);
+
+            var responce = gameStates[ID];
+            call_back(
+                {
+                    'ID': responce.ID,
+                    'gameState': responce.gameState
+                }
+            );
+        }
     }
 
     createNewGame(call_back) {
@@ -28,12 +38,16 @@ class Model {
         var tickInterval = setInterval(function() {
             gameState.tick();
         }, 0);
+        var lastUpdate = setTimeout(function() {
+            THIS.removeGameState(ID);
+        }, 5000);
 
         gameStates.push(
             {
                 'ID': ID,
                 'gameState': gameState,
-                'tickInterval': tickInterval
+                'tickInterval': tickInterval,
+                'lastUpdate': lastUpdate
             }
         );
 
@@ -44,6 +58,11 @@ class Model {
                 'gameState': responce.gameState
             }
         );
+    }
+
+    removeGameState(ID) {
+        gameStates.splice(ID, 1);
+        console.log('gameState: '+ID+' cleared, gameStates active: '+gameStates.length);
     }
 
 }

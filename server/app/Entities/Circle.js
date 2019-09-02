@@ -5,15 +5,17 @@ class Circle {
     constructor(x, y, radius, mass) {
         this.x = x;
         this.y = y;
+        var velX = Math.random() - 0.5;
+        var velY = Math.random() - Math.abs(velX);
         this.velocity = {
-            x: Math.random() - 0.5,
-            y: Math.random() - 0.5
+            x: velX,
+            y: velY
         };
         this.radius = radius;
         this.mass = mass;
     }
 
-    update (food, circles, walls) {
+    update(dt, walls, circles, food) {
         // Food
         for (var i = 0; i < food.length; i++) {
             // food[i].radius / 2 because a circle only has to cover half of something to eat it
@@ -48,6 +50,7 @@ class Circle {
         */
         
         // Move
+        //console.log(dt);
         this.x += this.velocity.x;
         this.y += this.velocity.y;
     };
