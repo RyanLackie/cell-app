@@ -4,7 +4,11 @@ const GameState = require('./States/GameState.js');
 var gameStates = [];
 
 class Model {
-    constructor() {}
+    constructor() {
+        for (var i = 0; i < 100; i++) {
+            gameStates[i] = null;
+        }
+    }
 
     // Methods
     ping(call_back) {
@@ -12,8 +16,7 @@ class Model {
     }
 
     getState(ID, call_back) {
-        console.log(gameStates[ID]);
-        if (gameStates[ID] != undefined) {
+        if (gameStates[ID] != null) {
             var THIS = this;
 
             clearInterval(gameStates[ID].lastUpdate);
@@ -22,47 +25,68 @@ class Model {
             }, 5000);
 
             var responce = gameStates[ID];
-            call_back(
+            return call_back(
                 {
-                    'ID': responce.ID,
-                    'gameState': responce.gameState
+                    'ID': ID,
+                    'gameState': responce.gameState,
+                    'status': 100,
+                    'message': 'Everything is okay!'
                 }
             );
         }
+
+        call_back( {'status': 300, 'message': 'ID is not active'} );
     }
 
     createNewGame(call_back) {
-        const ID = gameStates.length;
+        var ID = null;
+        for (var i = 0; i < gameStates.length; i++) {
+            if (gameStates[i] == null) {
+                ID = i;
+                break;
+            }
+        }
+        if (ID == null)
+            return call_back( {'status': 300, 'message': 'Server is Full'} );
+
         var gameState = new GameState(null, null, [], []);
+
         gameState.createNewGame();
         var tickInterval = setInterval(function() {
             gameState.tick();
         }, 0);
+
         var lastUpdate = setTimeout(function() {
             THIS.removeGameState(ID);
         }, 5000);
 
-        gameStates.push(
-            {
-                'ID': ID,
-                'gameState': gameState,
-                'tickInterval': tickInterval,
-                'lastUpdate': lastUpdate
-            }
-        );
+        gameStates[ID] = {
+            'gameState': gameState,
+            'tickInterval': tickInterval,
+            'lastUpdate': lastUpdate
+        }
 
         var responce = gameStates[ID];
         call_back(
             {
-                'ID': responce.ID,
-                'gameState': responce.gameState
+                'ID': ID,
+                'gameState': responce.gameState,
+                'status': 100,
+                'message': 'Everything is okay!'
             }
         );
     }
 
     removeGameState(ID) {
-        gameStates.splice(ID, 1);
-        console.log('gameState: '+ID+' cleared, gameStates active: '+gameStates.length);
+        gameStates[ID] = null;
+
+        var active = 0;
+        for (var i = 0; i < gameStates.length; i++) {
+            if (gameStates[i] != null)
+                active++;
+        }
+
+        console.log('gameState: '+ID+' cleared, gameStates active: '+active);
     }
 
 }

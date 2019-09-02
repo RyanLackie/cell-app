@@ -347,21 +347,31 @@ export default {
         
         api.createNewGame().then(
             responce => {
-                this.gameState = responce.gameState;
+                if (responce.status == 100) {
+                    this.gameState = responce.gameState;
 
-                var THIS = this;
-                this.tickInterval = setInterval(function() {
-                    api.getState(responce.ID).then(
-                        update => {
-                            THIS.gameState = update.gameState;
-                            //console.log(THIS.gameState);
-                            THIS.walls = THIS.gameState.walls;
-                            THIS.circles = THIS.gameState.circles;
-                            THIS.food = THIS.gameState.food;
-                            console.log(THIS.gameState);
-                        }
-                    );
-                }, 0);
+                    var THIS = this;
+                    this.tickInterval = setInterval(function() {
+                        api.getState(responce.ID).then(
+                            update => {
+                                if (update.status == 100) {
+                                    THIS.gameState = update.gameState;
+                                    THIS.walls = THIS.gameState.walls;
+                                    THIS.circles = THIS.gameState.circles;
+                                    THIS.food = THIS.gameState.food;
+                                    //console.log(THIS.gameState);
+                                }
+
+                                else if (responce.status == 300) {
+                                    alert(responce.message);
+                                }
+                            }
+                        );
+                    }, 0);
+                }
+
+                else if (responce.status == 300)
+                    alert(responce.message);
             }
         );
     },
