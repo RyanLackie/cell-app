@@ -22,8 +22,8 @@ module.exports = {
             const angle = -Math.atan2(otherParticle.y - particle.y, otherParticle.x - particle.x);
 
             // Store mass in var for better readability in collision equation
-            const m1 = particle.mass;
-            const m2 = otherParticle.mass;
+            const m1 = particle.radius;
+            const m2 = otherParticle.radius;
 
             // Velocity before equation
             const u1 = this.rotate(particle.velocity, angle);

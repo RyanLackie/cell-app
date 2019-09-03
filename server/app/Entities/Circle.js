@@ -2,9 +2,10 @@
 const Util = require('../Util/Util.js');
 
 class Circle {
-    constructor(x, y, radius, mass) {
+    constructor(x, y, radius) {
         this.x = x;
         this.y = y;
+        this.radius = radius;
 
         var velX = Math.random() - 0.5;
         var velY = Math.random() - Math.abs(velX);
@@ -12,17 +13,13 @@ class Circle {
             x: velX,
             y: velY    // Not quite it
         };
-
-        this.radius = radius;
-        this.mass = mass;
     }
 
     update(dt, walls, circles, food, bounds) {
         var target = null;
         var targetDistance = null;
 
-        // Food
-        
+        // Food     // Add enemy attack and run later
         for (var i = 0; i < food.length; i++) {
             var distance = Util.distance(this.x, this.y, food[i].x, food[i].y);
 
@@ -42,11 +39,31 @@ class Circle {
         if (target != null) {
             var diffX = target.x - this.x;
             var diffY = target.y - this.y;
-            this.velocity.x = diffX / (Math.abs(diffX) + Math.abs(diffY));
-            this.velocity.y = diffY / (Math.abs(diffX) + Math.abs(diffY));
+            var targetVelX = diffX / (Math.abs(diffX) + Math.abs(diffY));
+            var targetVelY = diffY / (Math.abs(diffX) + Math.abs(diffY));
+            /*
+            var rateOfChange = 0.1/this.radius;
+
+            if (Math.abs(this.velocity.x - targetVelX) <= rateOfChange)
+                this.velocity.x = targetVelX;
+            else if (this.velocity.x < targetVelX)
+                this.velocity.x += rateOfChange;
+            else if (this.velocity.x > targetVelY)
+                this.velocity.x -= rateOfChange;
+
+            if (Math.abs(this.velocity.y - targetVelY) <= rateOfChange)
+                this.velocity.Y = targetVelY;
+            else if (this.velocity.y < targetVelY)
+                this.velocity.y += rateOfChange;
+            else if (this.velocity.y > targetVelY)
+                this.velocity.y -= rateOfChange;
+            */
+            // Remove after testing
+            this.velocity.x = targetVelX;
+            this.velocity.y = targetVelY;
         }
         
-        // Circles  // Add enemy targeting later
+        // Circles
         for (var i = 0; i < circles.length; i++) {
             if (this == circles[i]) continue;
             
@@ -67,7 +84,7 @@ class Circle {
             this.velocity.x = Math.abs(this.velocity.x);
         else if (this.x + this.radius >= bounds.width - bounds.wallThickness)
             this.velocity.x = -Math.abs(this.velocity.x);
-            
+
         if (this.y - this.radius <= bounds.wallThickness)
             this.velocity.y = Math.abs(this.velocity.y);
         else if (this.y + this.radius >= bounds.height - bounds.wallThickness)
@@ -82,8 +99,11 @@ class Circle {
         */
         
         // Move
-        this.x += this.velocity.x;
-        this.y += this.velocity.y;
+        var deltaTime = 1;
+        if (dt != 0)
+            deltaTime = dt;
+        this.x += this.velocity.x * deltaTime;
+        this.y += this.velocity.y * deltaTime;
     };
 }
 

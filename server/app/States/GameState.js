@@ -32,7 +32,6 @@ class GameState {
             const r = 20;
             var x = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
             var y = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.height - this.bounds.wallThickness - r);
-            var mass = 1;
 
             if (i != 0) {
                 for (var j = 0; j < this.circles.length; j++) {
@@ -45,7 +44,7 @@ class GameState {
                 }
             }
             
-            this.circles.push( new Circle(x, y, r, mass) );
+            this.circles.push( new Circle(x, y, r) );
         }
     }
 
