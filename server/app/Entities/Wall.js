@@ -4,6 +4,8 @@ class Wall {
         this.y = y;
         this.width = width;
         this.height = height;
+
+        this.mass = 10000;
     }
 }
 

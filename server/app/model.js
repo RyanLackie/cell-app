@@ -49,7 +49,7 @@ class Model {
         if (ID == null)
             return call_back( {'status': 300, 'message': 'Server is Full'} );
 
-        var gameState = new GameState(null, null, [], []);
+        var gameState = new GameState(null, null, [], [], []);
         gameState.createNewGame();
 
         var tickInterval = setInterval(function() {

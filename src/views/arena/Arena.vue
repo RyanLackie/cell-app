@@ -20,8 +20,8 @@
             :rx="(food.radius/gameState.bounds.width)*100+'%'" :ry="(food.radius/gameState.bounds.height)*100+'%'"
             fill="orange"/>
             
-            <!-- Circles -->
-            <ellipse v-for="(circle, i) in gameState.circles" :key="'circle'+i"
+            <!-- allies -->
+            <ellipse v-for="(circle, i) in gameState.allies" :key="'circle'+i"
             :cx="(circle.x/gameState.bounds.width)*100+'%'" :cy="(circle.y/gameState.bounds.height)*100+'%'"
             :rx="(circle.radius/gameState.bounds.width)*100+'%'" :ry="(circle.radius/gameState.bounds.height)*100+'%'"
             fill="green"/>
@@ -34,13 +34,38 @@
                 -->
 
                 <!-- Circle food sensor -->
-                <ellipse v-for="(circle, i) in gameState.circles" :key="'foodSensor'+i"
+                <ellipse v-for="(circle, i) in gameState.allies" :key="'foodSensor'+i"
                 :cx="(circle.x/gameState.bounds.width)*100+'%'" :cy="(circle.y/gameState.bounds.height)*100+'%'"
                 :rx="(circle.radius*3/gameState.bounds.width)*100+'%'" :ry="(circle.radius*3/gameState.bounds.height)*100+'%'"
                 fill="transparent" stroke="red"/>
 
                 <!-- Target pointer -->
-                <line v-for="(circle, i) in gameState.circles" :key="'line'+i"
+                <line v-for="(circle, i) in gameState.allies" :key="'line'+i"
+                :x1="(circle.x/gameState.bounds.width)*100+'%'" :y1="(circle.y/gameState.bounds.height)*100+'%'" 
+                :x2="(circle.targetX/gameState.bounds.width)*100+'%'" :y2="(circle.targetY/gameState.bounds.height)*100+'%'" 
+                :style="styleLine(circle.targetX, circle.targetY)"/>
+
+            <!-- enemies -->
+            <ellipse v-for="(circle, i) in gameState.enemies" :key="'circle'+i"
+            :cx="(circle.x/gameState.bounds.width)*100+'%'" :cy="(circle.y/gameState.bounds.height)*100+'%'"
+            :rx="(circle.radius/gameState.bounds.width)*100+'%'" :ry="(circle.radius/gameState.bounds.height)*100+'%'"
+            fill="red"/>
+            <!--fill="url(#image)"-->
+                <!-- Circle images -->
+                <!--
+                <pattern id="image" x="0%" y="0%" height="100%" width="100%" viewBox="0 0 512 512">
+                    <image x="0%" y="0%" width="512" height="512" xlink:href="./test.png"></image>
+                </pattern>
+                -->
+
+                <!-- Circle food sensor -->
+                <ellipse v-for="(circle, i) in gameState.enemies" :key="'foodSensor'+i"
+                :cx="(circle.x/gameState.bounds.width)*100+'%'" :cy="(circle.y/gameState.bounds.height)*100+'%'"
+                :rx="(circle.radius*3/gameState.bounds.width)*100+'%'" :ry="(circle.radius*3/gameState.bounds.height)*100+'%'"
+                fill="transparent" stroke="red"/>
+
+                <!-- Target pointer -->
+                <line v-for="(circle, i) in gameState.enemies" :key="'line'+i"
                 :x1="(circle.x/gameState.bounds.width)*100+'%'" :y1="(circle.y/gameState.bounds.height)*100+'%'" 
                 :x2="(circle.targetX/gameState.bounds.width)*100+'%'" :y2="(circle.targetY/gameState.bounds.height)*100+'%'" 
                 :style="styleLine(circle.targetX, circle.targetY)"/>
@@ -107,7 +132,9 @@ export default {
                 walls: [],
                 
                 // Circle objects
-                circles: [],
+                allies: [],
+
+                enemies: [],
 
                 // Food objects
                 food: [],
@@ -162,7 +189,7 @@ export default {
                 update => {
                     if (update.status == 100) {
                         this.gameState = update.gameState;
-                        //console.log(Math.abs(this.circles[0].velocity.x) + Math.abs(this.circles[0].velocity.y));
+                        //console.log(Math.abs(this.allies[0].velocity.x) + Math.abs(this.allies[0].velocity.y));
                     }
 
                     else if (update.status == 300) {

@@ -8,6 +8,41 @@ module.exports = {
         return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow((y1 - y2), 2));
     },
     
+    resolveStaticCollision(particle, otherParticle) {
+        const xVelocityDiff = particle.velocity.x;
+        const yVelocityDiff = particle.velocity.y;
+
+        const xDist = otherParticle.x - particle.x;
+        const yDist = otherParticle.y - particle.y;
+
+        // Prevent accidental overlap of particles
+        if (xVelocityDiff * xDist + yVelocityDiff * yDist >= 0) {
+
+            // Grab angle between the two colliding particles
+            const angle = -Math.atan2(otherParticle.y - particle.y, otherParticle.x - particle.x);
+
+            // Store mass in var for better readability in collision equation
+            const m1 = particle.radius;
+            const m2 = otherParticle.mass;
+
+            // Velocity before equation
+            const u1 = this.rotate(particle.velocity, angle);
+            const u2 = this.rotate(0, angle);
+
+            // Velocity after 1d collision equation
+            const v1 = { 
+                x: u1.x * (m1 - m2) / (m1 + m2) + u2.x * 2 * m2 / (m1 + m2),
+                y: u1.y
+            };
+
+            // Final velocity after rotating axis back to original location
+            const vFinal1 = this.rotate(v1, -angle);
+
+            // Swap particle velocities for realistic bounce effect
+            particle.velocity.x = vFinal1.x;
+            particle.velocity.y = vFinal1.y;
+        }
+    },
     resolveCollision(particle, otherParticle) {
         const xVelocityDiff = particle.velocity.x - otherParticle.velocity.x;
         const yVelocityDiff = particle.velocity.y - otherParticle.velocity.y;
