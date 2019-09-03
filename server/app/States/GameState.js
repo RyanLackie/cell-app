@@ -5,30 +5,30 @@ const Food = require('../Entities/Food.js');
 
 const Util = require('../Util/Util.js');
 
-var lastUpdate = Date.now();
-var lastFoodSpawn = 0;
-
 class GameState {
     constructor(bounds, walls, circles, food) {
         this.bounds = bounds;
         this.walls = walls;
         this.circles = circles;
         this.food = food;
+
+        this.lastUpdate = Date.now();
+        this.lastFoodSpawn = 0;
     }
 
     createNewGame() {
         this.bounds = {
-            width: 1000, height: 500, wallThickness: 20
+            width: 500, height: 200, wallThickness: 20
         };
 
         this.walls = [
-            new Wall(0, 0, 1000, 20),       // Top
-            new Wall(0, 0, 20, 500),        // Left
-            new Wall(0, 480, 1000, 20),     // Bottom
-            new Wall(980, 0, 20, 500),      // Right
+            new Wall(0, 0, this.bounds.width, this.bounds.wallThickness),       // Top
+            new Wall(0, 0, this.bounds.wallThickness, this.bounds.height),        // Left
+            new Wall(0, this.bounds.height - this.bounds.wallThickness, this.bounds.width, this.bounds.wallThickness),     // Bottom
+            new Wall(this.bounds.width - this.bounds.wallThickness, 0, this.bounds.wallThickness, this.bounds.height),      // Right
         ];
 
-        for (var i = 0; i < 5; i++) {
+        for (var i = 0; i < 2; i++) {
             const r = 20;
             var x = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
             var y = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.height - this.bounds.wallThickness - r);
@@ -50,8 +50,8 @@ class GameState {
 
     tick() {
         var now = Date.now();
-        var dt = now - lastUpdate;
-        lastUpdate = now;
+        var dt = now - this.lastUpdate;
+        this.lastUpdate = now;
         
         for (var i = 0; i < this.circles.length; i++) {
             this.circles[i].update(dt, this.walls, this.circles, this.food, this.bounds);
@@ -61,8 +61,8 @@ class GameState {
     }
 
     spawnFood() {
-        if (Date.now() > lastFoodSpawn + 5000) {
-            lastFoodSpawn = Date.now();
+        if (Date.now() > this.lastFoodSpawn + 5000) {
+            this.lastFoodSpawn = Date.now();
 
             const r = 5;
             var x = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);

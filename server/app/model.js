@@ -50,12 +50,13 @@ class Model {
             return call_back( {'status': 300, 'message': 'Server is Full'} );
 
         var gameState = new GameState(null, null, [], []);
-
         gameState.createNewGame();
+
         var tickInterval = setInterval(function() {
             gameState.tick();
         }, 0);
 
+        var THIS = this;
         var lastUpdate = setTimeout(function() {
             THIS.removeGameState(ID);
         }, 5000);
