@@ -48,58 +48,51 @@ class Circle {
         }
         
         // Manipulate xy velocity to target xy
+        var targetVelX = this.velocity.x;
+        var targetVelY = this.velocity.y;
+
         var rateOfChange = 0.1/this.radius;
-        if (target != null) {
-            var diffX = target.x - this.x;
-            var diffY = target.y - this.y;
-            var targetVelX = diffX / (Math.abs(diffX) + Math.abs(diffY));
-            var targetVelY = diffY / (Math.abs(diffX) + Math.abs(diffY));
-            
-            if (Math.abs(this.velocity.x - targetVelX) <= rateOfChange)
+
+        // Set  speed up or slow down to a speed of 1
+        if (target == null && Math.abs(this.velocity.x) + Math.abs(this.velocity.y) != 1) {
+            var extraSpeed = (Math.abs(this.velocity.x) + Math.abs(this.velocity.y)) - 1;
+
+            if (targetVelX > 0)
+                targetVelX -= extraSpeed / 2;
+            else if (targetVelX < 0)
+                targetVelX += extraSpeed / 2;
+
+            if (targetVelY > 0)
+                targetVelY -= extraSpeed / 2;
+            else if (targetVelY < 0)
+                targetVelY += extraSpeed / 2;
+        }
+
+        // Set target velocity to move towards target
+        else if (target != null) {
+            var xDifference = target.x - this.x;
+            var yDifference = target.y - this.y;
+            targetVelX = xDifference / (Math.abs(xDifference) + Math.abs(yDifference));
+            targetVelY = yDifference / (Math.abs(xDifference) + Math.abs(yDifference));
+        }
+
+        // Move current velocity towards target velocty in relation to momentum
+        if (Math.abs(this.velocity.x - targetVelX) <= rateOfChange)
                 this.velocity.x = targetVelX;
-            else if (this.velocity.x < targetVelX)
-                this.velocity.x += rateOfChange;
-            else if (this.velocity.x > targetVelX)
-                this.velocity.x -= rateOfChange;
+        else if (this.velocity.x < targetVelX)
+            this.velocity.x += rateOfChange;
+        else if (this.velocity.x > targetVelX)
+            this.velocity.x -= rateOfChange;
 
-            if (Math.abs(this.velocity.y - targetVelY) <= rateOfChange)
-                this.velocity.Y = targetVelY;
-            else if (this.velocity.y < targetVelY)
-                this.velocity.y += rateOfChange;
-            else if (this.velocity.y > targetVelY)
-                this.velocity.y -= rateOfChange;
-        }
-        var extraSpeed = (Math.abs(this.velocity.x) + Math.abs(this.velocity.y)) - 1;
-        /*
-        // Slow down
-        if (extraSpeed > 0) {
-            if (this.velocity.x > 0)
-                this.velocity.x -= extraSpeed/2;
-            else
-                this.velocity.x += extraSpeed/2;
-
-            if (this.velocity.y > 0)
-                this.velocity.y -= extraSpeed/2;
-            else
-                this.velocity.y += extraSpeed/2;
-        }
-        */
-        /*
-        // Speed up
-        if (extraSpeed < 0) {
-            if (this.velocity.x > 0)
-                this.velocity.x -= extraSpeed/2;
-            else
-                this.velocity.x += extraSpeed/2;
-                
-            if (this.velocity.y > 0)
-                this.velocity.y -= extraSpeed/2;
-            else
-                this.velocity.y += extraSpeed/2;
-        }
-        */
+        if (Math.abs(this.velocity.y - targetVelY) <= rateOfChange)
+            this.velocity.Y = targetVelY;
+        else if (this.velocity.y < targetVelY)
+            this.velocity.y += rateOfChange;
+        else if (this.velocity.y > targetVelY)
+            this.velocity.y -= rateOfChange;
+            
         
-        // Circles
+        // Circles collision
         for (var i = 0; i < circles.length; i++) {
             if (this == circles[i]) continue;
             
@@ -107,7 +100,7 @@ class Circle {
                 Util.resolveCollision(this, circles[i]);
         }
 
-        // Walls
+        // Walls collision
         /*
         for (i = 0; i < walls.length; i++) {
             var deltaX = this.x - Math.max(walls[i].x, Math.min(this.x, walls[i].x + walls[i].width));
@@ -126,7 +119,7 @@ class Circle {
         else if (this.y + this.radius >= bounds.height - bounds.wallThickness)
             this.velocity.y = -Math.abs(this.velocity.y);
         
-        // End of world
+        // End of world collision
         /*
         if ((this.x - this.radius <= 0) || (this.x + this.radius >= bounds.width))
             this.velocity.x = -this.velocity.x;
