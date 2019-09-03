@@ -54,12 +54,12 @@ class Circle {
             var diffY = target.y - this.y;
             var targetVelX = diffX / (Math.abs(diffX) + Math.abs(diffY));
             var targetVelY = diffY / (Math.abs(diffX) + Math.abs(diffY));
-            /*
+            
             if (Math.abs(this.velocity.x - targetVelX) <= rateOfChange)
                 this.velocity.x = targetVelX;
             else if (this.velocity.x < targetVelX)
                 this.velocity.x += rateOfChange;
-            else if (this.velocity.x > targetVelY)
+            else if (this.velocity.x > targetVelX)
                 this.velocity.x -= rateOfChange;
 
             if (Math.abs(this.velocity.y - targetVelY) <= rateOfChange)
@@ -68,12 +68,6 @@ class Circle {
                 this.velocity.y += rateOfChange;
             else if (this.velocity.y > targetVelY)
                 this.velocity.y -= rateOfChange;
-            */
-            ///*
-            // Remove after testing
-            this.velocity.x = targetVelX;
-            this.velocity.y = targetVelY;
-            //*/
         }
         var extraSpeed = (Math.abs(this.velocity.x) + Math.abs(this.velocity.y)) - 1;
         /*
@@ -90,7 +84,7 @@ class Circle {
                 this.velocity.y += extraSpeed/2;
         }
         */
-        ///*
+        /*
         // Speed up
         if (extraSpeed < 0) {
             if (this.velocity.x > 0)
@@ -103,7 +97,7 @@ class Circle {
             else
                 this.velocity.y += extraSpeed/2;
         }
-        //*/
+        */
         
         // Circles
         for (var i = 0; i < circles.length; i++) {

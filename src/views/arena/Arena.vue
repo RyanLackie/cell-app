@@ -40,17 +40,13 @@
                 fill="transparent" stroke="red"/>
 
                 <!-- Target pointer -->
-                <line v-for="(circle, i) in gameState.circles" :key="'line'+i" 
+                <line v-for="(circle, i) in gameState.circles" :key="'line'+i"
                 :x1="(circle.x/gameState.bounds.width)*100+'%'" :y1="(circle.y/gameState.bounds.height)*100+'%'" 
                 :x2="(circle.targetX/gameState.bounds.width)*100+'%'" :y2="(circle.targetY/gameState.bounds.height)*100+'%'" 
-                style="stroke:rgb(255,0,0); stroke-width:2"/>
+                :style="styleLine(circle.targetX, circle.targetY)"/>
+                
 
         </svg>
-
-        <!--canvas id="canvas"
-        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-        outline: 5px blue solid">
-        </canvas-->
 
     </div>
 
@@ -177,12 +173,15 @@ export default {
             );
         },
 
-
+        styleLine(x, y) {
+            if (x == null || y == null)
+                return;
+            else
+                return "stroke:rgb(255,0,0); stroke-width:2;";
+        }
     },
 
     mounted() {
-        //this.init();
-        
         api.createNewGame().then(
             responce => {
                 if (responce.status == 100) {
