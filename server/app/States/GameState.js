@@ -18,7 +18,7 @@ class GameState {
 
     createNewGame() {
         this.bounds = {
-            width: 500, height: 200, wallThickness: 20
+            width: 700, height: 300, wallThickness: 20
         };
 
         this.walls = [
@@ -28,7 +28,7 @@ class GameState {
             new Wall(this.bounds.width - this.bounds.wallThickness, 0, this.bounds.wallThickness, this.bounds.height),      // Right
         ];
 
-        for (var i = 0; i < 2; i++) {
+        for (var i = 0; i < 1; i++) {
             const r = 20;
             var x = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
             var y = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.height - this.bounds.wallThickness - r);

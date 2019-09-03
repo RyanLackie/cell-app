@@ -12,35 +12,38 @@
             <rect v-for="(wall, i) in gameState.walls" :key="'wall'+i"
             :x="(wall.x/gameState.bounds.width)*100+'%'" :y="(wall.y/gameState.bounds.height)*100+'%'"
             :width="(wall.width/gameState.bounds.width)*100+'%'" :height="(wall.height/gameState.bounds.height)*100+'%'"
-            fill="lightblue"
-            :id="'wall'+i"/>
+            fill="lightblue"/>
 
             <!-- Food -->
             <ellipse v-for="(food, i) in gameState.food" :key="'food'+i"
             :cx="(food.x/gameState.bounds.width)*100+'%'" :cy="(food.y/gameState.bounds.height)*100+'%'"
             :rx="(food.radius/gameState.bounds.width)*100+'%'" :ry="(food.radius/gameState.bounds.height)*100+'%'"
-            fill="orange"
-            :id="'food'+i"/>
+            fill="orange"/>
             
             <!-- Circles -->
             <ellipse v-for="(circle, i) in gameState.circles" :key="'circle'+i"
             :cx="(circle.x/gameState.bounds.width)*100+'%'" :cy="(circle.y/gameState.bounds.height)*100+'%'"
             :rx="(circle.radius/gameState.bounds.width)*100+'%'" :ry="(circle.radius/gameState.bounds.height)*100+'%'"
-            fill="green"
-            :id="'circle'+i"/>
+            fill="green"/>
             <!--fill="url(#image)"-->
-            <!--
-            <pattern id="image" x="0%" y="0%" height="100%" width="100%" viewBox="0 0 512 512">
-                <image x="0%" y="0%" width="512" height="512" xlink:href="./test.png"></image>
-            </pattern>
-            -->
+                <!-- Circle images -->
+                <!--
+                <pattern id="image" x="0%" y="0%" height="100%" width="100%" viewBox="0 0 512 512">
+                    <image x="0%" y="0%" width="512" height="512" xlink:href="./test.png"></image>
+                </pattern>
+                -->
 
-            <!-- Circle food sensor -->
-            <ellipse v-for="(circle, i) in gameState.circles" :key="'foodSensor'+i"
-            :cx="(circle.x/gameState.bounds.width)*100+'%'" :cy="(circle.y/gameState.bounds.height)*100+'%'"
-            :rx="(circle.radius*3/gameState.bounds.width)*100+'%'" :ry="(circle.radius*3/gameState.bounds.height)*100+'%'"
-            fill="transparent" stroke="red"
-            :id="'foodSensor'+i"/>
+                <!-- Circle food sensor -->
+                <ellipse v-for="(circle, i) in gameState.circles" :key="'foodSensor'+i"
+                :cx="(circle.x/gameState.bounds.width)*100+'%'" :cy="(circle.y/gameState.bounds.height)*100+'%'"
+                :rx="(circle.radius*3/gameState.bounds.width)*100+'%'" :ry="(circle.radius*3/gameState.bounds.height)*100+'%'"
+                fill="transparent" stroke="red"/>
+
+                <!-- Target pointer -->
+                <line v-for="(circle, i) in gameState.circles" :key="'line'+i" 
+                :x1="(circle.x/gameState.bounds.width)*100+'%'" :y1="(circle.y/gameState.bounds.height)*100+'%'" 
+                :x2="(circle.targetX/gameState.bounds.width)*100+'%'" :y2="(circle.targetY/gameState.bounds.height)*100+'%'" 
+                style="stroke:rgb(255,0,0); stroke-width:2"/>
 
         </svg>
 
@@ -167,6 +170,7 @@ export default {
                     }
 
                     else if (update.status == 300) {
+                        clearInterval(tickInterval);
                         alert(update.message);
                     }
                 }

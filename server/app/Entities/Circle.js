@@ -13,11 +13,17 @@ class Circle {
             x: velX,
             y: velY
         };
+        
+        this.targetX = null;
+        this.targetY = null;
     }
 
     update(dt, walls, circles, food, bounds) {
         var target = null;
         var targetDistance = null;
+        // Remove after
+        this.targetX = null;
+        this.targetY = null;
 
         // Food     // Add enemy attack and run later
         for (var i = 0; i < food.length; i++) {
@@ -26,15 +32,19 @@ class Circle {
             // food[i].radius / 2 because a circle only has to cover half of something to eat it
             if (distance - (this.radius + food[i].radius/2) < 0) {
                 food.splice(i, 1);
-                this.radius++;
+                if (this.radius <= 70)  // Radius limit
+                    this.radius++;
             }
 
-            else if (distance < this.radius * 3 + food[i].radius) {
-                if (distance < targetDistance || target == null) {
+            //else if (distance < this.radius * 3 + food[i].radius) {
+                else if (distance < targetDistance || target == null) {
                     target = food[i];
                     targetDistance = distance;
+                    // Remove after
+                    this.targetX = target.x;
+                    this.targetY = target.y;
                 }
-            }
+            //}
         }
         
         // Manipulate xy velocity to target xy
@@ -44,7 +54,7 @@ class Circle {
             var diffY = target.y - this.y;
             var targetVelX = diffX / (Math.abs(diffX) + Math.abs(diffY));
             var targetVelY = diffY / (Math.abs(diffX) + Math.abs(diffY));
-
+            /*
             if (Math.abs(this.velocity.x - targetVelX) <= rateOfChange)
                 this.velocity.x = targetVelX;
             else if (this.velocity.x < targetVelX)
@@ -58,11 +68,12 @@ class Circle {
                 this.velocity.y += rateOfChange;
             else if (this.velocity.y > targetVelY)
                 this.velocity.y -= rateOfChange;
-            /*
+            */
+            ///*
             // Remove after testing
             this.velocity.x = targetVelX;
             this.velocity.y = targetVelY;
-            */
+            //*/
         }
         var extraSpeed = (Math.abs(this.velocity.x) + Math.abs(this.velocity.y)) - 1;
         /*
@@ -134,7 +145,7 @@ class Circle {
         if (dt != 0)
             deltaTime = dt;
         // Add a movment speed limiter
-        var speedLimiter = this.radius / 100;
+        var speedLimiter = 3 / this.radius;
         this.x += this.velocity.x * speedLimiter * deltaTime;
         this.y += this.velocity.y * speedLimiter *  deltaTime;
     };
