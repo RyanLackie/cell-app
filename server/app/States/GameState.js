@@ -19,7 +19,7 @@ class GameState {
 
     createNewGame() {
         this.bounds = {
-            width: 1000, height: 500, wallThickness: 20
+            width: 400, height: 200, wallThickness: 20
         };
 
         this.walls = [
@@ -29,7 +29,7 @@ class GameState {
             new Wall(this.bounds.width - this.bounds.wallThickness, 0, this.bounds.wallThickness, this.bounds.height),      // Right
         ];
 
-        var numOfAllies = 4;
+        var numOfAllies = 1;
         for (var i = 0; i < numOfAllies; i++) {
             const r = 20;
             var x = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
@@ -49,7 +49,7 @@ class GameState {
             this.allies.push( new Circle(x, y, r) );
         }
 
-        var numOfEnemies = 4;
+        var numOfEnemies = 1;
         for (var i = 0; i < numOfEnemies; i++) {
             const r = 20;
             var x = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);

@@ -34,14 +34,13 @@ class Circle {
         // If no collisions take place (circle, wall, edge)
         if (!collision) {
             
-            // Find food
-            var target = this.findAndEatFood(food, enemies);
-
-            // Find threats
-            var threats = this.findPossibleThreats(enemies);
+            // Find target and threats
+            var targetAndThreats = this.findTargetAndThreats(enemies);
+            if (targetAndThreats.target == null && targetAndThreats.threats.length == 0)
+                targetAndThreats = this.findTargetAndThreats(food);
             
-            // Manipulate velocity for food and threats
-            this.velocityInRegardsToEnvironment(target, threats);
+            // Manipulate velocity for target and threats
+            this.velocityInRegardsToEnvironment(targetAndThreats.target, targetAndThreats.threats);
 
         }
 
@@ -49,7 +48,17 @@ class Circle {
         this.moveByVelocity(dt);
     };
 
-    findAndEatFood(food, enemies) {
+    findTargetAndThreats(food) {
+        var target = null;
+        var targetDistance = this.radius*4;
+
+        var threats = [];
+
+        // Remove after
+        this.targetX = null;
+        this.targetY = null;
+
+        // Unlist previusly unreachable targets
         const timeOfDisinterest = 4000;
         for (var j = 0; j < this.blacklist.length; j++) {
             if (Date.now() > this.blacklist[j].time + timeOfDisinterest) {
@@ -58,17 +67,9 @@ class Circle {
             }
         }
 
-        var target = null;
-        var foodTargetDistance = this.radius*4;
-        var circleTargetDistance = this.radius*4;
-        
-        // Remove after
-        this.targetX = null;
-        this.targetY = null;
-
-        // Food
+        // Find targets and threats
         for (var i = 0; i < food.length; i++) {
-            
+            // Pass over blacklisted targets
             var blacklisted = false;
             for (var j = 0; j < this.blacklist.length; j++) {
                 if (this.blacklist[j].target == food[i]) {
@@ -83,57 +84,31 @@ class Circle {
 
             var foodIsInVision = distance < this.radius * 3 + food[i].radius;
             var foodIsEdible = this.radius > food[i].radius;
-            var foodIsEaten = distance < this.radius + food[i].radius/2;
+            var foodIsEaten = distance < this.radius + food[i].radius * (3/4);
 
-            if (foodIsInVision && foodIsEdible) {
-                if (foodIsEaten) {
-                    if (this.radius <= 70)  // Radius limit
-                        this.radius += food[i].radius/4;
-                    food.splice(i, 1);
+            if (foodIsInVision) {
+                if (foodIsEdible) {
+                    if (foodIsEaten) {
+                        if (this.radius + food[i].radius/4 < 70)  // Radius limit
+                            this.radius += food[i].radius/4;
+                        else
+                            this.radius = 70;
+                        food.splice(i, 1);
+                    }
+
+                    // Target is the closest
+                    else if (distance < targetDistance) {
+                        target = food[i];
+                        targetDistance = distance;
+                    }
                 }
 
-                // Target is the closest
-                else if (distance < foodTargetDistance) {
-                    target = food[i];
-                    foodTargetDistance = distance;
-                }
-            }
-        }
-        // Enemies
-        for (i = 0; i < enemies.length; i++) {
-
-            var blacklisted = false;
-            for (var j = 0; j < this.blacklist.length; j++) {
-                if (this.blacklist[j].target == enemies[i]) {
-                    blacklisted = true;
-                    break;
-                }
-            }
-            if (blacklisted)
-                continue;
-
-            var distance = Util.distance(this.x, this.y, enemies[i].x, enemies[i].y);
-
-            var enemyIsInVision = distance < this.radius * 3 + enemies[i].radius;
-            var enemyIsEdible = this.radius > enemies[i].radius;
-            var enemyIsEaten = distance < this.radius + enemies[i].radius/2;
-
-            if (enemyIsInVision && enemyIsEdible) {
-                if (enemyIsEaten) {
-                    if (this.radius <= 70)  // Radius limit
-                        this.radius += enemies[i].radius/4;
-                    enemies.splice(i, 1);
-                }
-
-                // Target is the closest
-                else if (distance < circleTargetDistance) {
-                    target = enemies[i];
-                    circleTargetDistance = distance;
-                }
+                else if (!foodIsEdible)
+                    threats.push(food[i]);
             }
         }
 
-        // Handle unreachable targets
+        // Add unreachable target to blacklist
         const timeOfInterest = 7000;
         if (target != null) {
             if (this.lastTarget == target) {
@@ -149,25 +124,8 @@ class Circle {
                 this.lastTargetTime = Date.now();
             }
         }
-        
-        return target;
-    }
 
-    findPossibleThreats(enemies) {
-        var threats = [];
-
-        for (var i = 0; i < enemies.length; i++) {
-            var distance = Util.distance(this.x, this.y, enemies[i].x, enemies[i].y);
-
-            var enemyIsInVision = distance < this.radius * 3 + enemies[i].radius;
-            var enemyIsAThreat = this.radius <= enemies[i].radius;
-
-            if (enemyIsInVision && enemyIsAThreat)
-                threats.push(enemies[i]);
-
-        }
-
-        return threats;
+        return { target: target, threats: threats };
     }
 
     velocityInRegardsToEnvironment(target, threats) {
@@ -176,7 +134,7 @@ class Circle {
         var targetVelY = this.velocity.y;
 
         // Set target velocity to move towards target
-        if (target != null && threats.length < 1) {
+        if (target != null && threats.length == 0) {
             var xDifference = target.x - this.x;
             var yDifference = target.y - this.y;
             var xyDifference = Math.abs(xDifference) + Math.abs(yDifference);
