@@ -19,7 +19,7 @@ class GameState {
 
     createNewGame() {
         this.bounds = {
-            width: 700, height: 300, wallThickness: 20
+            width: 1000, height: 500, wallThickness: 20
         };
 
         this.walls = [
@@ -29,8 +29,8 @@ class GameState {
             new Wall(this.bounds.width - this.bounds.wallThickness, 0, this.bounds.wallThickness, this.bounds.height),      // Right
         ];
 
-        var numOfAllies = 2;
-        for (var i = 0; i < 1; i++) {
+        var numOfAllies = 4;
+        for (var i = 0; i < numOfAllies; i++) {
             const r = 20;
             var x = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
             var y = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.height - this.bounds.wallThickness - r);
@@ -49,8 +49,8 @@ class GameState {
             this.allies.push( new Circle(x, y, r) );
         }
 
-        var numOfEnemies = 2;
-        for (var i = 0; i < 1; i++) {
+        var numOfEnemies = 4;
+        for (var i = 0; i < numOfEnemies; i++) {
             const r = 20;
             var x = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
             var y = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.height - this.bounds.wallThickness - r);
@@ -76,10 +76,10 @@ class GameState {
         this.lastUpdate = now;
         
         for (var i = 0; i < this.allies.length; i++) {
-            this.allies[i].update(dt, this.walls, this.allies, this.food, this.enemies, this.bounds);
+            this.allies[i].update(dt, this.food, this.allies, this.enemies, this.walls, this.bounds);
         }
         for (var i = 0; i < this.enemies.length; i++) {
-            this.enemies[i].update(dt, this.walls, this.allies, this.food, this.enemies, this.bounds);
+            this.enemies[i].update(dt, this.food, this.enemies, this.allies, this.walls, this.bounds);
         }
 
         this.spawnFood();

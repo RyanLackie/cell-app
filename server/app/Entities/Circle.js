@@ -16,21 +16,33 @@ class Circle {
         
         this.targetX = null;
         this.targetY = null;
+
+        this.lastTarget = null;
+        this.lastTargetTime = 0;
+        this.blacklist = [];
     }
 
-    update(dt, walls, allies, food, enemies, bounds) {
+    update(dt, food, allies, enemies, walls, bounds) {
+        var collision = false;
+        if (this.circleCollision(allies))
+            collision = true;
+        if (this.wallCollision(walls, bounds))
+            collision = true;
+        if (this.boundaryEdgeCollision(bounds))
+            collision = true;
 
         // If no collisions take place (circle, wall, edge)
-        if (!this.circleCollision(allies) && !this.wallCollision(walls, bounds) && !this.boundaryEdgeCollision(bounds)) {
-
+        if (!collision) {
+            
             // Find food
             var target = this.findAndEatFood(food, enemies);
 
             // Find threats
-            var threats = this.findAndAvoidThreats(enemies);
+            var threats = this.findPossibleThreats(enemies);
             
             // Manipulate velocity for food and threats
             this.velocityInRegardsToEnvironment(target, threats);
+
         }
 
         // Move by the calculated velocity amounts
@@ -38,64 +50,124 @@ class Circle {
     };
 
     findAndEatFood(food, enemies) {
-        var target = null;
-        var foodTargetDistance = null;
-        var circleTargetDistance = null;
+        const timeOfDisinterest = 4000;
+        for (var j = 0; j < this.blacklist.length; j++) {
+            if (Date.now() > this.blacklist[j].time + timeOfDisinterest) {
+                this.blacklist.splice(j, 1);
+                j--;
+            }
+        }
 
+        var target = null;
+        var foodTargetDistance = this.radius*4;
+        var circleTargetDistance = this.radius*4;
+        
         // Remove after
         this.targetX = null;
         this.targetY = null;
 
         // Food
         for (var i = 0; i < food.length; i++) {
+            
+            var blacklisted = false;
+            for (var j = 0; j < this.blacklist.length; j++) {
+                if (this.blacklist[j].target == food[i]) {
+                    blacklisted = true;
+                    break;
+                }
+            }
+            if (blacklisted)
+                continue;
+
             var distance = Util.distance(this.x, this.y, food[i].x, food[i].y);
 
-            // food[i].radius / 2 because a circle only has to cover half of something to eat it
-            if (distance - (this.radius + food[i].radius/2) < 0) {
-                food.splice(i, 1);
-                if (this.radius <= 70)  // Radius limit
-                    this.radius++;
-            }
+            var foodIsInVision = distance < this.radius * 3 + food[i].radius;
+            var foodIsEdible = this.radius > food[i].radius;
+            var foodIsEaten = distance < this.radius + food[i].radius/2;
 
-            //else if (distance < this.radius * 3 + food[i].radius) {
-                else if (distance < foodTargetDistance || target == null) {
+            if (foodIsInVision && foodIsEdible) {
+                if (foodIsEaten) {
+                    if (this.radius <= 70)  // Radius limit
+                        this.radius += food[i].radius/4;
+                    food.splice(i, 1);
+                }
+
+                // Target is the closest
+                else if (distance < foodTargetDistance) {
                     target = food[i];
                     foodTargetDistance = distance;
-
-                    // Remove after
-                    this.targetX = target.x;
-                    this.targetY = target.y;
                 }
-            //}
+            }
         }
-        // enemies
-        /*
+        // Enemies
         for (i = 0; i < enemies.length; i++) {
+
+            var blacklisted = false;
+            for (var j = 0; j < this.blacklist.length; j++) {
+                if (this.blacklist[j].target == enemies[i]) {
+                    blacklisted = true;
+                    break;
+                }
+            }
+            if (blacklisted)
+                continue;
+
             var distance = Util.distance(this.x, this.y, enemies[i].x, enemies[i].y);
 
-            // enemies[i].radius / 2 because a circle only has to cover half of something to eat it
-            if (distance - (this.radius + enemies[i].radius/2) < 0) {
-                enemies.splice(i, 1);
-                if (this.radius <= 70)  // Radius limit
-                    this.radius++;
-            }
+            var enemyIsInVision = distance < this.radius * 3 + enemies[i].radius;
+            var enemyIsEdible = this.radius > enemies[i].radius;
+            var enemyIsEaten = distance < this.radius + enemies[i].radius/2;
 
-            else if (distance < this.radius * 3 + enemies[i].radius && 
-                (distance < circleTargetDistance || target == null)) {
+            if (enemyIsInVision && enemyIsEdible) {
+                if (enemyIsEaten) {
+                    if (this.radius <= 70)  // Radius limit
+                        this.radius += enemies[i].radius/4;
+                    enemies.splice(i, 1);
+                }
 
+                // Target is the closest
+                else if (distance < circleTargetDistance) {
                     target = enemies[i];
                     circleTargetDistance = distance;
-
-                    // Remove after
-                    this.targetX = target.x;
-                    this.targetY = target.y;
+                }
             }
         }
-        */
+
+        // Handle unreachable targets
+        const timeOfInterest = 7000;
+        if (target != null) {
+            if (this.lastTarget == target) {
+                if (Date.now() > this.lastTargetTime + timeOfInterest) {
+                    this.blacklist.push({
+                        target: target,
+                        time: Date.now()
+                    });
+                }
+            }
+            else {
+                this.lastTarget = target;
+                this.lastTargetTime = Date.now();
+            }
+        }
+        
         return target;
     }
-    findAndAvoidThreats(enemies) {
 
+    findPossibleThreats(enemies) {
+        var threats = [];
+
+        for (var i = 0; i < enemies.length; i++) {
+            var distance = Util.distance(this.x, this.y, enemies[i].x, enemies[i].y);
+
+            var enemyIsInVision = distance < this.radius * 3 + enemies[i].radius;
+            var enemyIsAThreat = this.radius <= enemies[i].radius;
+
+            if (enemyIsInVision && enemyIsAThreat)
+                threats.push(enemies[i]);
+
+        }
+
+        return threats;
     }
 
     velocityInRegardsToEnvironment(target, threats) {
@@ -103,8 +175,39 @@ class Circle {
         var targetVelX = this.velocity.x;
         var targetVelY = this.velocity.y;
 
+        // Set target velocity to move towards target
+        if (target != null && threats.length < 1) {
+            var xDifference = target.x - this.x;
+            var yDifference = target.y - this.y;
+            var xyDifference = Math.abs(xDifference) + Math.abs(yDifference);
+            targetVelX = xDifference / xyDifference;
+            targetVelY = yDifference / xyDifference;
+
+            // Remove after
+            this.targetX = target.x;
+            this.targetY = target.y;
+        }
+
+        // Set target velocity to move away from threats
+        if (threats.length > 0) {
+            var averageX = 0;
+            var averageY = 0;
+            var averageTotal = 0;
+
+            for (var i = 0; i < threats.length; i++) {
+                averageX += threats[i].x;
+                averageY += threats[i].y;
+                averageTotal += Math.abs(threats[i].x) + Math.abs(threats[i].y);
+            }
+
+            var xDifference = this.x - averageX;
+            var yDifference = this.y - averageY;
+            targetVelX = xDifference / averageTotal;
+            targetVelY = yDifference / averageTotal;
+        }
+
         // Set speed up or slow down to a speed of 1
-        if (target == null && Math.abs(this.velocity.x) + Math.abs(this.velocity.y) != 1) {
+        if ((target == null || threats.length == 0) && Math.abs(this.velocity.x) + Math.abs(this.velocity.y) != 1) {
             var extraSpeed = (Math.abs(this.velocity.x) + Math.abs(this.velocity.y)) - 1;
 
             if (targetVelX > 0)
@@ -116,14 +219,6 @@ class Circle {
                 targetVelY -= extraSpeed / 2;
             else if (targetVelY < 0)
                 targetVelY += extraSpeed / 2;
-        }
-
-        // Set target velocity to move towards target
-        else if (target != null) {
-            var xDifference = target.x - this.x;
-            var yDifference = target.y - this.y;
-            targetVelX = xDifference / (Math.abs(xDifference) + Math.abs(yDifference));
-            targetVelY = yDifference / (Math.abs(xDifference) + Math.abs(yDifference));
         }
 
         var rateOfChange = 0.1/this.radius;
@@ -207,7 +302,7 @@ class Circle {
         }
 
         if (this.y - this.radius <= bounds.wallThickness) {
-            this.velocity.y = M/ath.abs(this.velocity.y);
+            this.velocity.y = Math.abs(this.velocity.y);
             collision = true;
         }
         else if (this.y + this.radius >= bounds.height) {
@@ -223,7 +318,7 @@ class Circle {
         if (dt != 0)
             deltaTime = dt;
         // Add a movment speed limiter
-        var speedLimiter = 3 / this.radius;
+        var speedLimiter = 7 / (this.radius*5);
         this.x += this.velocity.x * speedLimiter * deltaTime;
         this.y += this.velocity.y * speedLimiter *  deltaTime;
     }

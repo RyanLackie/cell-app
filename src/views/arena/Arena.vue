@@ -43,7 +43,7 @@
                 <line v-for="(circle, i) in gameState.allies" :key="'line'+i"
                 :x1="(circle.x/gameState.bounds.width)*100+'%'" :y1="(circle.y/gameState.bounds.height)*100+'%'" 
                 :x2="(circle.targetX/gameState.bounds.width)*100+'%'" :y2="(circle.targetY/gameState.bounds.height)*100+'%'" 
-                :style="styleLine(circle.targetX, circle.targetY)"/>
+                :style="styleLine(circle, 0)"/>
 
             <!-- enemies -->
             <ellipse v-for="(circle, i) in gameState.enemies" :key="'circle'+i"
@@ -68,7 +68,7 @@
                 <line v-for="(circle, i) in gameState.enemies" :key="'line'+i"
                 :x1="(circle.x/gameState.bounds.width)*100+'%'" :y1="(circle.y/gameState.bounds.height)*100+'%'" 
                 :x2="(circle.targetX/gameState.bounds.width)*100+'%'" :y2="(circle.targetY/gameState.bounds.height)*100+'%'" 
-                :style="styleLine(circle.targetX, circle.targetY)"/>
+                :style="styleLine(circle, 1)"/>
                 
 
         </svg>
@@ -200,11 +200,18 @@ export default {
             );
         },
 
-        styleLine(x, y) {
+        styleLine(circle, team) {
+            var x = circle.targetX;
+            var y = circle.targetY;
+            var color = null;
+            if (team == 0)
+                color = 'green';
+            else
+                color = 'red';
             if (x == null || y == null)
                 return;
             else
-                return "stroke:rgb(255,0,0); stroke-width:2;";
+                return "stroke:"+color+"; stroke-width:2;";
         }
     },
 
