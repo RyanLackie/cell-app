@@ -8,7 +8,7 @@ class Circle {
         this.radius = radius;
 
         var velX = Math.random() - 0.5;
-        var velY = Math.random() - Math.abs(velX);  // Not quite it
+        var velY = Math.random() - (1 - Math.abs(velX));
         this.velocity = {
             x: velX,
             y: velY
@@ -30,14 +30,15 @@ class Circle {
             collision = true;
         if (this.boundaryEdgeCollision(bounds))
             collision = true;
-
+        
         // If no collisions take place (circle, wall, edge)
         if (!collision) {
             
             // Find target and threats
-            var targetAndThreats = this.findTargetAndThreats(enemies);
-            if (targetAndThreats.target == null && targetAndThreats.threats.length == 0)
-                targetAndThreats = this.findTargetAndThreats(food);
+            var targetAndThreats = this.findTargetAndThreats(food);
+            var enemyTargetAndThreats = this.findTargetAndThreats(enemies);
+            if (enemyTargetAndThreats.target != null || enemyTargetAndThreats.threats.length != 0)
+                targetAndThreats = enemyTargetAndThreats;
             
             // Manipulate velocity for target and threats
             this.velocityInRegardsToEnvironment(targetAndThreats.target, targetAndThreats.threats);
@@ -59,6 +60,7 @@ class Circle {
         this.targetY = null;
 
         // Unlist previusly unreachable targets
+        /*
         const timeOfDisinterest = 4000;
         for (var j = 0; j < this.blacklist.length; j++) {
             if (Date.now() > this.blacklist[j].time + timeOfDisinterest) {
@@ -66,9 +68,11 @@ class Circle {
                 j--;
             }
         }
+        */
 
         // Find targets and threats
         for (var i = 0; i < food.length; i++) {
+            /*
             // Pass over blacklisted targets
             var blacklisted = false;
             for (var j = 0; j < this.blacklist.length; j++) {
@@ -79,12 +83,13 @@ class Circle {
             }
             if (blacklisted)
                 continue;
+            */
 
             var distance = Util.distance(this.x, this.y, food[i].x, food[i].y);
 
             var foodIsInVision = distance < this.radius * 3 + food[i].radius;
             var foodIsEdible = this.radius > food[i].radius;
-            var foodIsEaten = distance < this.radius + food[i].radius * (3/4);
+            var foodIsEaten = distance < this.radius - food[i].radius * 0.25;   // Cover 3/4 of diamiter
 
             if (foodIsInVision) {
                 if (foodIsEdible) {
@@ -107,7 +112,7 @@ class Circle {
                     threats.push(food[i]);
             }
         }
-
+        /*
         // Add unreachable target to blacklist
         const timeOfInterest = 7000;
         if (target != null) {
@@ -124,17 +129,33 @@ class Circle {
                 this.lastTargetTime = Date.now();
             }
         }
-
+        */
         return { target: target, threats: threats };
     }
 
     velocityInRegardsToEnvironment(target, threats) {
-        // Manipulate xy velocity to target xy
         var targetVelX = this.velocity.x;
         var targetVelY = this.velocity.y;
 
+        // Set target velocity to move away from threats
+        if (threats.length > 0) {
+            var avoidAverageX = 0;
+            var avoidAverageY = 0;
+
+            for (var i = 0; i < threats.length; i++) {
+                avoidAverageX += threats[i].x;
+                avoidAverageY += threats[i].y;
+            }
+
+            var xDifference = this.x - avoidAverageX;
+            var yDifference = this.y - avoidAverageY;
+            var xyDifference = Math.abs(xDifference) + Math.abs(yDifference);
+            targetVelX = xDifference / xyDifference;
+            targetVelY = yDifference / xyDifference;
+        }
+
         // Set target velocity to move towards target
-        if (target != null && threats.length == 0) {
+        else if (target != null && threats.length == 0) {
             var xDifference = target.x - this.x;
             var yDifference = target.y - this.y;
             var xyDifference = Math.abs(xDifference) + Math.abs(yDifference);
@@ -146,26 +167,8 @@ class Circle {
             this.targetY = target.y;
         }
 
-        // Set target velocity to move away from threats
-        if (threats.length > 0) {
-            var averageX = 0;
-            var averageY = 0;
-            var averageTotal = 0;
-
-            for (var i = 0; i < threats.length; i++) {
-                averageX += threats[i].x;
-                averageY += threats[i].y;
-                averageTotal += Math.abs(threats[i].x) + Math.abs(threats[i].y);
-            }
-
-            var xDifference = this.x - averageX;
-            var yDifference = this.y - averageY;
-            targetVelX = xDifference / averageTotal;
-            targetVelY = yDifference / averageTotal;
-        }
-
         // Set speed up or slow down to a speed of 1
-        if ((target == null || threats.length == 0) && Math.abs(this.velocity.x) + Math.abs(this.velocity.y) != 1) {
+        else if ((target == null || threats.length == 0) && Math.abs(this.velocity.x) + Math.abs(this.velocity.y) != 1) {
             var extraSpeed = (Math.abs(this.velocity.x) + Math.abs(this.velocity.y)) - 1;
 
             if (targetVelX > 0)
@@ -203,7 +206,6 @@ class Circle {
         for (var i = 0; i < allies.length; i++) {
             if (this == allies[i]) continue;
             
-            // Circle collision
             if (Util.distance(this.x, this.y, allies[i].x, allies[i].y) - (this.radius + allies[i].radius) < 0) {
                 collision = true;
                 Util.resolveCollision(this, allies[i]);
@@ -217,14 +219,14 @@ class Circle {
         var collision = false;
 
         /*
-        for (i = 0; i < walls.length; i++) {
+        for (var i = 0; i < walls.length; i++) {
             var deltaX = this.x - Math.max(walls[i].x, Math.min(this.x, walls[i].x + walls[i].width));
             var deltaY = this.y - Math.max(walls[i].y, Math.min(this.y, walls[i].y + walls[i].height));
             if ((deltaX * deltaX + deltaY * deltaY) < (this.radius * this.radius))
                 Util.resolveStaticCollision(this, walls[i]);
         }
         */
-        ///*
+        //*
         if (this.x - this.radius <= bounds.wallThickness) {
             this.velocity.x = Math.abs(this.velocity.x);
             collision = true;

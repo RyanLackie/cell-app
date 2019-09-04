@@ -27,7 +27,7 @@ module.exports = {
 
             // Velocity before equation
             const u1 = this.rotate(particle.velocity, angle);
-            const u2 = this.rotate(0, angle);
+            const u2 = this.rotate({x: 0, y: 0}, angle);
 
             // Velocity after 1d collision equation
             const v1 = { 
@@ -41,6 +41,7 @@ module.exports = {
             // Swap particle velocities for realistic bounce effect
             particle.velocity.x = vFinal1.x;
             particle.velocity.y = vFinal1.y;
+            //console.log(vFinal1.x + '  ' + vFinal1.y);
         }
     },
     resolveCollision(particle, otherParticle) {

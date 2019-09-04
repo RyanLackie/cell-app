@@ -19,7 +19,7 @@ class GameState {
 
     createNewGame() {
         this.bounds = {
-            width: 400, height: 200, wallThickness: 20
+            width: 1000, height: 500, wallThickness: 20
         };
 
         this.walls = [
@@ -29,7 +29,7 @@ class GameState {
             new Wall(this.bounds.width - this.bounds.wallThickness, 0, this.bounds.wallThickness, this.bounds.height),      // Right
         ];
 
-        var numOfAllies = 1;
+        var numOfAllies = 4;
         for (var i = 0; i < numOfAllies; i++) {
             const r = 20;
             var x = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
@@ -49,7 +49,7 @@ class GameState {
             this.allies.push( new Circle(x, y, r) );
         }
 
-        var numOfEnemies = 1;
+        var numOfEnemies = 4;
         for (var i = 0; i < numOfEnemies; i++) {
             const r = 20;
             var x = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
@@ -93,12 +93,24 @@ class GameState {
             var x = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
             var y = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.height - this.bounds.wallThickness - r);
 
-            for (var i = 0; i < this.allies.length; i++) {
-                if (Util.distance(x, y, this.allies[i].x, this.allies[i].y) - (r + this.allies[i].radius) < 0) {
-                    x = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
-                    y = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.height - this.bounds.wallThickness - r);
-                    
-                    i = -1;
+            for (var i = 0; i < Math.max(this.allies.length, this.enemies.length); i++) {
+                if (i < this.allies.length) {
+                    if (Util.distance(x, y, this.allies[i].x, this.allies[i].y) - (r + this.allies[i].radius) < 0) {
+                        x = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
+                        y = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.height - this.bounds.wallThickness - r);
+                        
+                        i = -1;
+                        continue;
+                    }
+                }
+                if (i < this.enemies.length) {
+                    if (i < this.enemies.length && Util.distance(x, y, this.enemies[i].x, this.enemies[i].y) - (r + this.enemies[i].radius) < 0) {
+                        x = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.width - this.bounds.wallThickness - r);
+                        y = Util.randomIntFromRange(this.bounds.wallThickness + r, this.bounds.height - this.bounds.wallThickness - r);
+                        
+                        i = -1;
+                        continue;
+                    }
                 }
             }
 
