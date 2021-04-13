@@ -1,9 +1,9 @@
 {
-  "name": "cellgame",
+  "name": "cell-game-api",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "node server/index.js",
+    "start": "node index.js",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"

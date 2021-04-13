@@ -1,61 +1,5 @@
-<template>
-
-    <div class="arena" :style="'transform: scale('+scale+') translate('+translateX+'px,'+translateY+'px);'+
-    'width: '+getAspectRatio()*gameState.bounds.width+'px; height: '+getAspectRatio()*gameState.bounds.height+'px;'"
-    @mousedown="mouseDown($event)"
-    @mousemove="mouseMove($event)"
-    @mouseup="mouseUp()"
-    @mouseleave="mouseLeave()"
-    @mousewheel="scrollArena($event)">
-
-        <!--svg :style="'width: 100%; height: 100%; outline: '+(50/gameState.bounds.height)*gameState.bounds.height+'px lightblue solid'"-->
-        <svg style="width: 100%; height: 100%;">
-
-            <!-- Food -->
-            <Food v-for="(food, i) in gameState.food" :key="'food '+i"
-                :gameStateWidth="gameState.bounds.width"
-                :gameStateHeight="gameState.bounds.height"
-                :food="food"
-            />
-            
-            <!-- Allies -->
-            <CircleObject v-for="(circleObject, i) in gameState.allies" :key="'ally circleObject '+i" 
-                :gameStateWidth="gameState.bounds.width"
-                :gameStateHeight="gameState.bounds.height"
-                :teamNumber="0"
-                :circleObject="circleObject"
-            />
-
-            <!-- Enemies -->
-            <CircleObject v-for="(circleObject, i) in gameState.enemies" :key="'enemy circleObject '+i" 
-                :gameStateWidth="gameState.bounds.width"
-                :gameStateHeight="gameState.bounds.height"
-                :teamNumber="1"
-                :circleObject="circleObject"
-            />
-            
-            <!-- Walls -->
-            <Wall v-for="(wall, i) in gameState.walls" :key="'wall '+i"
-                :gameStateWidth="gameState.bounds.width"
-                :gameStateHeight="gameState.bounds.height"
-                :wall="wall"
-            />
-
-        </svg>
-
-    </div>
-
-</template>
-
-
-<style lang="scss">
-    @import '../Game.sass';
-</style>
-
-
 <script>
     import * as api from '@/services/api_access';
-    import { clearInterval, setInterval } from 'timers';
 
     // Components
     import Food from './Food.vue';
@@ -83,7 +27,7 @@
                 previousY: 0,
 
                 // Game loop
-                tickInterval: null,
+                tickTimout: null,
 
                 // Enviroment
                 ID: null,
@@ -115,10 +59,13 @@
                     update => {
                         if (update.status == 100) {
                             this.gameState = update.gameState;
-                        }
+                            const THIS = this;
+                            this.tickTimout = setTimeout(() => {
+                                THIS.tick();
+                            }, 0);
 
-                        else if (update.status == 300) {
-                            clearInterval(tickInterval);
+                        } else if (update.status == 300) {
+                            clearTimeout(this.tickTimout);
                             alert(update.message);
                         }
                     }
@@ -139,7 +86,7 @@
                     direction = -1
 
                 this.scale - direction * this.zoomStep >= 0.75 &&
-                this.scale - direction * this.zoomStep <= 8 ? 
+                this.scale - direction * this.zoomStep <= 8 ?
                 (this.scale -= direction * this.zoomStep) : null;
             },
             mouseDown(event) {
@@ -151,7 +98,7 @@
                 if (this.mouseDownBoolean) {
                     this.translateX += event.clientX - this.previousX;
                     this.translateY += event.clientY - this.previousY;
-                    
+
                     this.previousX = event.clientX;
                     this.previousY = event.clientY;
                 }
@@ -166,24 +113,80 @@
 
         mounted() {
             api.createNewGame().then(
-                responce => {
-                    if (responce.status == 100) {
-                        this.ID = responce.ID;
-                        this.gameState = responce.gameState;
-                        
-                        var THIS = this;
-                        this.tickInterval = setInterval(function() {
+                response => {
+                    if (response.status == 100) {
+                        this.ID = response.ID;
+                        this.gameState = response.gameState;
+
+                        const THIS = this;
+                        this.tickTimout = setTimeout(() => {
                             THIS.tick();
                         }, 0);
                     }
 
-                    else if (responce.status == 300)
-                        alert(responce.message);
+                    else if (response.status == 300) {
+                        alert(response.message);
+                    }
                 }
             );
         },
         beforeDestroy() {
-            this.tickInterval = null;
+            clearTimeout(this.tickTimout);
         }
     }
 </script>
+
+
+<template>
+
+    <div class="arena" :style="'transform: scale('+scale+') translate('+translateX+'px,'+translateY+'px);'+
+    'width: '+getAspectRatio()*gameState.bounds.width+'px; height: '+getAspectRatio()*gameState.bounds.height+'px;'"
+    @mousedown="mouseDown($event)"
+    @mousemove="mouseMove($event)"
+    @mouseup="mouseUp()"
+    @mouseleave="mouseLeave()"
+    @mousewheel="scrollArena($event)">
+
+        <!--svg :style="'width: 100%; height: 100%; outline: '+(50/gameState.bounds.height)*gameState.bounds.height+'px lightblue solid'"-->
+        <svg style="width: 100%; height: 100%;">
+
+            <!-- Food -->
+            <Food v-for="(food, i) in gameState.food" :key="'food '+i"
+                :gameStateWidth="gameState.bounds.width"
+                :gameStateHeight="gameState.bounds.height"
+                :food="food"
+            />
+
+            <!-- Allies -->
+            <CircleObject v-for="(circleObject, i) in gameState.allies" :key="'ally circleObject '+i"
+                :gameStateWidth="gameState.bounds.width"
+                :gameStateHeight="gameState.bounds.height"
+                :teamNumber="0"
+                :circleObject="circleObject"
+            />
+
+            <!-- Enemies -->
+            <CircleObject v-for="(circleObject, i) in gameState.enemies" :key="'enemy circleObject '+i"
+                :gameStateWidth="gameState.bounds.width"
+                :gameStateHeight="gameState.bounds.height"
+                :teamNumber="1"
+                :circleObject="circleObject"
+            />
+
+            <!-- Walls -->
+            <Wall v-for="(wall, i) in gameState.walls" :key="'wall '+i"
+                :gameStateWidth="gameState.bounds.width"
+                :gameStateHeight="gameState.bounds.height"
+                :wall="wall"
+            />
+
+        </svg>
+
+    </div>
+
+</template>
+
+
+<style lang="scss">
+    @import '../Game.sass';
+</style>

@@ -1,3 +1,14 @@
+<script>
+    export default {
+        props: {
+            gameStateWidth: Number,
+            gameStateHeight: Number,
+            wall: Object
+        }
+    }
+</script>
+
+
 <template>
 
     <!-- SVG container -->
@@ -11,18 +22,7 @@
             :height="(wall.height/gameStateHeight)*100+'%'"
             fill="lightblue"
         />
-    
+
     </svg>
 
 </template>
-
-
-<script>
-    export default {
-        props: {
-            gameStateWidth: Number,
-            gameStateHeight: Number,
-            wall: Object
-        }
-    }
-</script>

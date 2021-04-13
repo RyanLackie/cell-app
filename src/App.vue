@@ -1,3 +1,10 @@
+<script type="text/javascript" src="d3.v2.min.js"></script>
+
+<script>
+
+</script>
+
+
 <template>
     <div id="app">
         <router-view/>
@@ -9,20 +16,6 @@
     body {
         margin: 0;
         padding: 0;
-    }
-    .noselect {
-        -webkit-touch-callout: none; /* iOS Safari */
-            -webkit-user-select: none; /* Safari */
-            -khtml-user-select: none; /* Konqueror HTML */
-            -moz-user-select: none; /* Firefox */
-                -ms-user-select: none; /* Internet Explorer/Edge */
-                    user-select: none; /* Non-prefixed version, currently
-                                        supported by Chrome and Opera */
+        font-family: 'Montserrat', sans-serif;
     }
 </style>
-
-<script type="text/javascript" src="d3.v2.min.js"></script>
-
-<script>
-
-</script>
