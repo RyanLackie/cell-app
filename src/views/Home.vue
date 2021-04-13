@@ -23,9 +23,7 @@
             handleFileSelect(event, playerNumber) {
                 const file = event.target.files[0];
 
-                let player = playerNumber === 'one' ?
-                    this.playerOne :
-                    this.playerTwo;
+                let player = playerNumber === 'one' ? this.playerOne : this.playerTwo;
                 player.errors = [];
 
                 // Check if less then 500kb
@@ -58,8 +56,6 @@
                         player.errors.push(error);
                     };
                 }
-
-                player = player;
             }
         },
 

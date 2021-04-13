@@ -57,14 +57,17 @@
             tick() {
                 api.getState(this.ID).then(
                     update => {
-                        if (update.status == 100) {
+                        if (update.status === 200) {
                             this.gameState = update.gameState;
-                            const THIS = this;
-                            this.tickTimout = setTimeout(() => {
-                                THIS.tick();
-                            }, 0);
 
-                        } else if (update.status == 300) {
+                            if (this.tickTimout !== null) {
+                                const THIS = this;
+                                this.tickTimout = setTimeout(() => {
+                                    THIS.tick();
+                                }, 0);
+                            }
+
+                        } else {
                             clearTimeout(this.tickTimout);
                             alert(update.message);
                         }
@@ -79,11 +82,12 @@
 
             // Camera control
             scrollArena(event) {
-                var direction = 0;
-                if (event.deltaY > 0)
+                let direction = 0;
+                if (event.deltaY > 0) {
                     direction = 1;
-                else
-                    direction = -1
+                } else {
+                    direction = -1;
+                }
 
                 this.scale - direction * this.zoomStep >= 0.75 &&
                 this.scale - direction * this.zoomStep <= 8 ?
@@ -114,7 +118,7 @@
         mounted() {
             api.createNewGame().then(
                 response => {
-                    if (response.status == 100) {
+                    if (response.status === 200) {
                         this.ID = response.ID;
                         this.gameState = response.gameState;
 
@@ -122,9 +126,8 @@
                         this.tickTimout = setTimeout(() => {
                             THIS.tick();
                         }, 0);
-                    }
 
-                    else if (response.status == 300) {
+                    } else {
                         alert(response.message);
                     }
                 }
@@ -139,13 +142,14 @@
 
 <template>
 
-    <div class="arena" :style="'transform: scale('+scale+') translate('+translateX+'px,'+translateY+'px);'+
-    'width: '+getAspectRatio()*gameState.bounds.width+'px; height: '+getAspectRatio()*gameState.bounds.height+'px;'"
-    @mousedown="mouseDown($event)"
-    @mousemove="mouseMove($event)"
-    @mouseup="mouseUp()"
-    @mouseleave="mouseLeave()"
-    @mousewheel="scrollArena($event)">
+    <div class="arena"
+        :style="'transform: scale('+scale+') translate('+translateX+'px,'+translateY+'px);'+
+            'width: '+getAspectRatio()*gameState.bounds.width+'px; height: '+getAspectRatio()*gameState.bounds.height+'px;'"
+        @mousedown="mouseDown($event)"
+        @mousemove="mouseMove($event)"
+        @mouseup="mouseUp()"
+        @mouseleave="mouseLeave()"
+        @wheel="scrollArena($event)">
 
         <!--svg :style="'width: 100%; height: 100%; outline: '+(50/gameState.bounds.height)*gameState.bounds.height+'px lightblue solid'"-->
         <svg style="width: 100%; height: 100%;">

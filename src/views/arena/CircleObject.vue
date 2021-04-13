@@ -2,8 +2,8 @@
     export default {
         data() {
             return {
-                img1: require('./images/success.jpg'),
-                img2: require('./images/fine.jpg')
+                img1: require('./images/success-meme.jpg'),
+                img2: require('./images/fine-meme.jpg')
             }
         },
 
