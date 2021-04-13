@@ -1,3 +1,14 @@
+<script>
+    export default {
+        props: {
+            gameStateWidth: Number,
+            gameStateHeight: Number,
+            food: Object
+        }
+    }
+</script>
+
+
 <template>
 
     <!-- SVG container -->
@@ -11,18 +22,7 @@
             :ry="(food.radius/gameStateHeight)*100+'%'"
             fill="orange"
         />
-    
+
     </svg>
 
 </template>
-
-
-<script>
-    export default {
-        props: {
-            gameStateWidth: Number,
-            gameStateHeight: Number,
-            food: Object
-        }
-    }
-</script>

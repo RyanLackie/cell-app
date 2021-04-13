@@ -1,19 +1,18 @@
-const api_root = "http://localhost:81";
-//const api_root = "http://134.209.217.37:";
+const apiRoot = "http://localhost:8000";
 
 // Methods
 export function ping() {
-    return myFetch(api_root + "/app/ping", {});
+    return myFetch(`${apiRoot}/app/ping`, {});
 }
 
 export function getState(ID) {
-    return myFetch(api_root + "/app/getState", {
+    return myFetch(`${apiRoot}/app/getState`, {
         ID
     });
 }
 
 export function createNewGame() {
-    return myFetch(api_root + "/app/createNewGame", {});
+    return myFetch(`${apiRoot}/app/createNewGame`, {});
 }
 
 
@@ -23,7 +22,7 @@ function myFetch(url = ``, data = null) {
         credentials: "same-origin"
     };
     if (data) {
-        options = { 
+        options = {
             ...options,
             method:  "POST",
             headers: {

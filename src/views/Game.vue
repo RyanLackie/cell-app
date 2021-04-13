@@ -4,11 +4,12 @@
 
         <arena></arena>
 
-        <div class="option-bar">
+        <!-- Part of a second version of this game -->
+        <!-- <div class="option-bar">
             <img v-for="option in options" :key="option"
             class="option noselect" :src="'http://placehold.it/500/500'"
             @click="optionClicked(option)">
-        </div>
+        </div> -->
 
     </div>
 
@@ -34,14 +35,9 @@ export default {
     },
 
     methods: {
-        scrollArena(event) {
-            console.log(event);
-            console.log(this);
-        },
-
-        optionClicked(option) {
-            console.log(option+' clicked');
-        }
+        // optionClicked(option) {
+        //     console.log(option+' clicked');
+        // }
     }
 }
 </script>
